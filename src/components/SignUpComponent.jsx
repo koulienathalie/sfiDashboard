@@ -1,0 +1,83 @@
+import { useNavigate } from 'react-router-dom'
+import { Box, Grid, Stack, Typography, Button } from '@mui/material'
+import { InputFormAuth } from './custom-elements/InputFormAuth'
+
+const inputItems = [
+    { type: 'text', label: 'Nom', name: 'last_name' },
+    { type: 'text', label: 'Prénom', name: 'first_name' },
+    { type: 'text', label: 'Email', name: 'email' },
+    { type: 'password', label: 'Mot de passe', name: 'password' },
+]
+
+export function SignUpComponent() {
+    const navigate = useNavigate()
+    function handleClick() {
+        navigate('/auth/login')
+    }
+    return (
+        <Grid container spacing={2} sx={{ p: 2, width: '100%', height: '95vh' }}>
+            <Grid size={7.5} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 4 }}>
+                <Box component="img" src="/images/sfi_logo_secondary.png" sx={{ alignSelf: 'start', width: 55 }} />
+
+                <Stack
+                    spacing={5}
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        mt: 1,
+                        width: '75%',
+                    }}>
+                    <Stack spacing={1} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <Typography fontSize={30} fontWeight={600}>
+                            Rejoindre le dashboard
+                        </Typography>
+
+                        <Typography fontSize={14} fontWeight={400} sx={{ color: '#808080' }}>
+                            Rejoignez-nous maintenant pour rationaliser votre expérience dès le premier jour.
+                        </Typography>
+                    </Stack>
+
+                    {/* Section formulaire */}
+                    <Stack spacing={4} sx={{ width: '80%' }}>
+                        {inputItems.map((item, idx) => (
+                            <InputFormAuth key={idx} type={item.type} name={name} label={item.label} />
+                        ))}
+                    </Stack>
+
+                    <Stack spacing={2} sx={{ display: 'flex', alignItems: 'center', width: '80%' }}>
+                        <Button
+                            variant="contained"
+                            sx={{ width: '100%', fontSize: 17, textTransform: 'none' }}
+                            size="large">
+                            S'inscrire
+                        </Button>
+
+                        {/* Pas de compte? */}
+                        <Typography sx={{ color: '#B3B3B3' }}>
+                            Vous avez déjà un compte ?{' '}
+                            <Typography
+                                component="span"
+                                fontWeight={500}
+                                onClick={handleClick}
+                                sx={{ textDecoration: 'underline', color: 'primary.main', cursor: 'pointer' }}>
+                                Connectez-vous
+                            </Typography>
+                        </Typography>
+                    </Stack>
+                </Stack>
+            </Grid>
+
+            <Grid
+                size={4.5}
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                }}>
+                <Box component="img" src="/images/right_side.png" sx={{ height: '100%', objectFit: 'cover' }} />
+            </Grid>
+        </Grid>
+    )
+}
