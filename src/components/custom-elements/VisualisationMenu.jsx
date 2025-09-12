@@ -1,0 +1,117 @@
+import { Menu, MenuItem, Grid, Box, Typography, Stack } from '@mui/material'
+import { Timeline, Lan, SyncAlt, Dns } from '@mui/icons-material'
+
+const makeIcon = (IconComp) => <IconComp sx={{ color: '#B3B3B3' }} />
+
+const listMenuItems = [
+    {
+        title: 'Visualisation des données',
+        descript: 'Représentez graphiquement vos métriques et journaux pour une analyse rapide et intuitive.',
+        icon: makeIcon(Timeline),
+    },
+    {
+        title: 'Monitoring IP Source et Destination',
+        descript:
+            'Analysez les communications réseau en identifiant les adresses IP à l’origine et à la cible du trafic.',
+        icon: makeIcon(Lan),
+    },
+    {
+        title: 'Flux des données',
+        descript: 'Suivez en temps réel la circulation des logs et identifiez les événements critiques.',
+        icon: makeIcon(SyncAlt),
+    },
+    {
+        title: 'Monitoring des services actifs',
+        descript: 'Surveillez l’état et la disponibilité des services essentiels de votre infrastructure.',
+        icon: makeIcon(Dns),
+    },
+]
+
+export function VisualizationMenu({ anchorEl, handleMenuClose }) {
+    return (
+        <Menu
+            elevation={0}
+            marginThreshold={0}
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            slotProps={{
+                paper: {
+                    sx: {
+                        width: '100%',
+                        maxWidth: '100%',
+                        borderRadius: 0,
+                    },
+                },
+                list: {
+                    sx: {
+                        px: 10,
+                        py: 3,
+                        bgcolor: 'primary.main',
+                    },
+                },
+            }}>
+            <Grid container spacing={2}>
+                <Grid size={4} sx={{ p: 2 }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            height: '75%',
+                        }}>
+                        <Typography color="text" fontSize={28} fontWeight={600} sx={{ mb: 1.5 }}>
+                            Centre de supervision
+                        </Typography>
+                        <Typography color="text" fontSize={16} lineHeight={1.5}>
+                            Vue centralisée de l’activité réseau, des journaux FortiGate et de l’utilisation de la bande
+                            passante
+                        </Typography>
+                    </Box>
+                </Grid>
+
+                <Grid container spacing={1} size={8} sx={{ p: 1 }}>
+                    {listMenuItems.map((item, idx) => (
+                        <Grid key={idx} size={6} sx={{ p: 1 }}>
+                            <MenuItem
+                                onClick={handleMenuClose}
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'start',
+                                    justifyContent: 'center',
+                                    p: 2,
+                                    whiteSpace: 'normal',
+                                    borderRadius: 2,
+                                }}>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        mr: 2,
+                                        p: 1.5,
+                                        borderRadius: 50,
+                                        bgcolor: 'secondary.lighter',
+                                    }}>
+                                    {item.icon}
+                                </Box>
+
+                                <Stack spacing={0.7}>
+                                    <Typography fontSize={18} fontWeight={600} color="text">
+                                        {item.title}
+                                    </Typography>
+
+                                    <Typography fontSize={14} color="text.normal">
+                                        {item.descript}
+                                    </Typography>
+                                </Stack>
+                            </MenuItem>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Grid>
+        </Menu>
+    )
+}

@@ -13,6 +13,10 @@ const theme = createTheme({
             light: '#F7F7F7',
             lighter: '#FFFFFF',
         },
+        text: {
+            main: '#FFF',
+            normal: '#74BDD1FF',
+        },
     },
 })
 
