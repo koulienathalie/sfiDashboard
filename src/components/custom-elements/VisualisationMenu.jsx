@@ -7,27 +7,31 @@ const listMenuItems = [
     {
         title: 'Visualisation des données',
         descript: 'Représentez graphiquement vos métriques et journaux pour une analyse rapide et intuitive.',
+        page: 'view',
         icon: makeIcon(Timeline),
     },
     {
         title: 'Monitoring IP Source et Destination',
         descript:
             'Analysez les communications réseau en identifiant les adresses IP à l’origine et à la cible du trafic.',
+        page: 'ipsource',
         icon: makeIcon(Lan),
     },
     {
         title: 'Flux des données',
         descript: 'Suivez en temps réel la circulation des logs et identifiez les événements critiques.',
+        page: 'flow',
         icon: makeIcon(SyncAlt),
     },
     {
         title: 'Monitoring des services actifs',
         descript: 'Surveillez l’état et la disponibilité des services essentiels de votre infrastructure.',
+        page: 'service',
         icon: makeIcon(Dns),
     },
 ]
 
-export function VisualizationMenu({ anchorEl, handleMenuClose }) {
+export function VisualizationMenu({ anchorEl, handleMenuClose, setSubItemActive }) {
     return (
         <Menu
             elevation={0}
@@ -76,7 +80,10 @@ export function VisualizationMenu({ anchorEl, handleMenuClose }) {
                     {listMenuItems.map((item, idx) => (
                         <Grid key={idx} size={6} sx={{ p: 1 }}>
                             <MenuItem
-                                onClick={handleMenuClose}
+                                onClick={() => {
+                                    setSubItemActive(item)
+                                    handleMenuClose
+                                }}
                                 sx={{
                                     display: 'flex',
                                     alignItems: 'start',

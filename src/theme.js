@@ -16,6 +16,7 @@ const theme = createTheme({
         text: {
             main: '#FFF',
             normal: '#74BDD1FF',
+            dark: '#808080',
         },
     },
 })
