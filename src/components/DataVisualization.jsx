@@ -11,8 +11,8 @@ const makeIcon = (IconComp) => <IconComp fontSize="15" sx={{ mx: 2 }} />
 export function DataVisualization() {
     const [itemActive, setItemActive] = useState('Tableau de bord')
     const [subItemActive, setSubItemActive] = useState({
-        title: 'Monitoring IP Source et Destination',
-        page: 'ipsource',
+        title: 'Monitoring des services actifs',
+        page: 'service',
     })
     const [anchorEl, setAnchorEl] = useState(null)
     const toolbarRef = useRef(null)
