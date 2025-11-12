@@ -1,3 +1,4 @@
+// back/server.js
 require('dotenv').config();
 const express = require('express');
 const { Client } = require('@elastic/elasticsearch');
@@ -8,7 +9,7 @@ const PORT = process.env.PORT || 3001;
 
 // Configuration Elasticsearch
 const esClient = new Client({
-    node: process.env.ES_NODE || 'https://172.27.28.14:9200',
+    node: process.env.ES_NODE || 'http://localhost:9200',
     auth: process.env.ES_USERNAME ? {
         username: process.env.ES_USERNAME,
         password: process.env.ES_PASSWORD
@@ -217,6 +218,40 @@ app.get('/api/fields/:index', async (req, res) => {
         });
         res.json(mapping);
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Stream de logs en temps réel (derniers N secondes)
+app.get('/api/realtime', async (req, res) => {
+    try {
+        const { seconds = 10, size = 50 } = req.query;
+        const now = new Date();
+        const from = new Date(now - seconds * 1000);
+
+        const result = await esClient.search({
+            index: process.env.ES_INDEX || 'filebeat-*',
+            body: {
+                size: parseInt(size),
+                query: {
+                    range: {
+                        '@timestamp': {
+                            gte: from.toISOString(),
+                            lte: now.toISOString()
+                        }
+                    }
+                },
+                sort: [{ '@timestamp': { order: 'desc' } }]
+            }
+        });
+
+        res.json({
+            total: result.hits.total.value,
+            hits: result.hits.hits,
+            timestamp: now.toISOString()
+        });
+    } catch (error) {
+        console.error('Erreur realtime:', error);
         res.status(500).json({ error: error.message });
     }
 });
