@@ -1,9 +1,12 @@
+// back/server.js
 require('dotenv').config();
 const express = require('express');
 const { Client } = require('@elastic/elasticsearch');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -16,14 +19,46 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 3001;
 
-// Configuration Elasticsearch
-const esClient = new Client({
-    node: process.env.ES_NODE || 'http://localhost:9200',
+// Configuration Elasticsearch avec certificat SSL
+const esConfig = {
+    node: process.env.ES_NODE || 'https://localhost:9200',
     auth: process.env.ES_USERNAME ? {
         username: process.env.ES_USERNAME,
         password: process.env.ES_PASSWORD
     } : undefined
-});
+};
+
+// Gestion du certificat SSL
+if (process.env.ES_CERT_PATH) {
+    // Option 1: Utiliser le certificat CA
+    try {
+        const caCert = fs.readFileSync(path.resolve(process.env.ES_CERT_PATH));
+        esConfig.tls = {
+            ca: caCert,
+            rejectUnauthorized: true
+        };
+        console.log('✅ Certificat SSL chargé depuis:', process.env.ES_CERT_PATH);
+    } catch (error) {
+        console.error('❌ Erreur chargement certificat:', error.message);
+        process.exit(1);
+    }
+} else if (process.env.ES_SSL_VERIFY === 'false') {
+    // Option 2: Désactiver la vérification SSL (NON RECOMMANDÉ en production)
+    esConfig.tls = {
+        rejectUnauthorized: false
+    };
+    console.warn('⚠️  Vérification SSL désactivée (non recommandé en production)');
+} else if (process.env.ES_FINGERPRINT) {
+    // Option 3: Utiliser le fingerprint du certificat
+    esConfig.tls = {
+        ca: undefined,
+        rejectUnauthorized: false
+    };
+    esConfig.caFingerprint = process.env.ES_FINGERPRINT;
+    console.log('✅ Utilisation du fingerprint SSL');
+}
+
+const esClient = new Client(esConfig);
 
 // Middleware
 app.use(cors());
