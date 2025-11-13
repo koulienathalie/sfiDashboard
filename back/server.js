@@ -1,4 +1,3 @@
-// back/server.js
 require('dotenv').config();
 const express = require('express');
 const { Client } = require('@elastic/elasticsearch');
