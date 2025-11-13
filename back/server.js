@@ -391,6 +391,241 @@ app.post('/api/top-sources', async (req, res) => {
     }
 });
 
+// Métriques de bande passante
+app.post('/api/bandwidth', async (req, res) => {
+    try {
+        const { timeRange, interval = '1m' } = req.body;
+
+        const result = await esClient.search({
+            index: process.env.ES_INDEX || 'filebeat-*',
+            body: {
+                size: 0,
+                query: {
+                    range: {
+                        '@timestamp': {
+                            gte: timeRange.from,
+                            lte: timeRange.to
+                        }
+                    }
+                },
+                aggs: {
+                    bandwidth_over_time: {
+                        date_histogram: {
+                            field: '@timestamp',
+                            fixed_interval: interval
+                        },
+                        aggs: {
+                            total_bytes: {
+                                sum: {
+                                    field: 'network.bytes'
+                                }
+                            },
+                            sent_bytes: {
+                                sum: {
+                                    field: 'source.bytes'
+                                }
+                            },
+                            received_bytes: {
+                                sum: {
+                                    field: 'destination.bytes'
+                                }
+                            }
+                        }
+                    },
+                    total_traffic: {
+                        sum: {
+                            field: 'network.bytes'
+                        }
+                    },
+                    avg_packet_size: {
+                        avg: {
+                            field: 'network.bytes'
+                        }
+                    }
+                }
+            }
+        });
+
+        res.json({
+            timeline: result.aggregations.bandwidth_over_time.buckets,
+            total: result.aggregations.total_traffic.value || 0,
+            average: result.aggregations.avg_packet_size.value || 0
+        });
+    } catch (error) {
+        console.error('Erreur bandwidth:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Top consommateurs de bande passante
+app.post('/api/top-bandwidth', async (req, res) => {
+    try {
+        const { timeRange, size = 10, type = 'source' } = req.body;
+        const field = type === 'source' ? 'source.ip' : 'destination.ip';
+
+        const result = await esClient.search({
+            index: process.env.ES_INDEX || 'filebeat-*',
+            body: {
+                size: 0,
+                query: {
+                    range: {
+                        '@timestamp': {
+                            gte: timeRange.from,
+                            lte: timeRange.to
+                        }
+                    }
+                },
+                aggs: {
+                    top_consumers: {
+                        terms: {
+                            field: field,
+                            size: size,
+                            order: { total_bytes: 'desc' }
+                        },
+                        aggs: {
+                            total_bytes: {
+                                sum: {
+                                    field: 'network.bytes'
+                                }
+                            },
+                            connection_count: {
+                                value_count: {
+                                    field: field
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        res.json(result.aggregations.top_consumers.buckets);
+    } catch (error) {
+        console.error('Erreur top bandwidth:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Statistiques par protocole/port
+app.post('/api/protocols', async (req, res) => {
+    try {
+        const { timeRange, size = 10 } = req.body;
+
+        const result = await esClient.search({
+            index: process.env.ES_INDEX || 'filebeat-*',
+            body: {
+                size: 0,
+                query: {
+                    range: {
+                        '@timestamp': {
+                            gte: timeRange.from,
+                            lte: timeRange.to
+                        }
+                    }
+                },
+                aggs: {
+                    by_protocol: {
+                        terms: {
+                            field: 'network.protocol',
+                            size: size
+                        }
+                    },
+                    by_destination_port: {
+                        terms: {
+                            field: 'destination.port',
+                            size: size
+                        },
+                        aggs: {
+                            bytes: {
+                                sum: {
+                                    field: 'network.bytes'
+                                }
+                            }
+                        }
+                    },
+                    by_application: {
+                        terms: {
+                            field: 'network.application',
+                            size: size
+                        }
+                    }
+                }
+            }
+        });
+
+        res.json({
+            protocols: result.aggregations.by_protocol.buckets,
+            ports: result.aggregations.by_destination_port.buckets,
+            applications: result.aggregations.by_application.buckets
+        });
+    } catch (error) {
+        console.error('Erreur protocols:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Actions et menaces
+app.post('/api/security-events', async (req, res) => {
+    try {
+        const { timeRange } = req.body;
+
+        const result = await esClient.search({
+            index: process.env.ES_INDEX || 'filebeat-*',
+            body: {
+                size: 0,
+                query: {
+                    range: {
+                        '@timestamp': {
+                            gte: timeRange.from,
+                            lte: timeRange.to
+                        }
+                    }
+                },
+                aggs: {
+                    by_action: {
+                        terms: {
+                            field: 'event.action',
+                            size: 20
+                        }
+                    },
+                    denied_connections: {
+                        filter: {
+                            terms: {
+                                'event.action': ['deny', 'block', 'drop']
+                            }
+                        },
+                        aggs: {
+                            top_denied_ips: {
+                                terms: {
+                                    field: 'source.ip',
+                                    size: 10
+                                }
+                            }
+                        }
+                    },
+                    allowed_connections: {
+                        filter: {
+                            terms: {
+                                'event.action': ['allow', 'accept', 'permit']
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        res.json({
+            actions: result.aggregations.by_action.buckets,
+            denied: result.aggregations.denied_connections.doc_count,
+            allowed: result.aggregations.allowed_connections.doc_count,
+            top_denied_ips: result.aggregations.denied_connections.top_denied_ips?.buckets || []
+        });
+    } catch (error) {
+        console.error('Erreur security events:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ============= DÉMARRAGE =============
 server.listen(PORT, () => {
     console.log(`
