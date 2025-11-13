@@ -1,0 +1,14 @@
+{
+  "name": "sfi-dash-monitoring",
+  "version": "1.0.0",
+  "description": "Monitoring Fortigate avec Elasticsearch",
+  "scripts": {
+    "start:back": "cd back && npm start",
+    "start:front": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run start:back\" \"npm run start:front\"",
+    "test:back": "cd back && npm run test:connection"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
