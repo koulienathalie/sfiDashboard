@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { LineChart } from '@mui/x-charts'
-import socket from '../../socketClient'
+import { onThrottled } from '../../socketClient'
 
 function formatTime(ts) {
     try {
@@ -62,8 +62,8 @@ export function ChartView() {
             }
         }
 
-        socket.on('bandwidth', handler)
-        return () => { socket.off('bandwidth', handler) }
+    const unsubscribe = onThrottled('bandwidth', handler, 1000)
+    return () => { if (typeof unsubscribe === 'function') unsubscribe() }
     }, [])
 
     if (!labels.length) return null
