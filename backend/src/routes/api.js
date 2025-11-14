@@ -94,6 +94,34 @@ function mountApiRoutes(app, esClient, logService) {
     }
   });
 
+  app.post('/api/bandwidth-by-ip', async (req, res) => {
+    try {
+      const { timeRange, interval = '1m', ip, field = 'source.ip' } = req.body;
+      if (!ip) return res.status(400).json({ error: 'ip required' });
+
+      const result = await esClient.search({
+        index: process.env.ES_INDEX || 'filebeat-*',
+        body: {
+          size: 0,
+          query: {
+            bool: {
+              must: [ { term: { [field]: ip } } ],
+              filter: { range: { '@timestamp': { gte: timeRange.from, lte: timeRange.to } } }
+            }
+          },
+          aggs: {
+            bandwidth_over_time: { date_histogram: { field: '@timestamp', fixed_interval: interval }, aggs: { total_bytes: { sum: { field: 'network.bytes' } }, sent_bytes: { sum: { field: 'source.bytes' } }, received_bytes: { sum: { field: 'destination.bytes' } } } }
+          }
+        }
+      });
+
+      res.json({ timeline: result.aggregations.bandwidth_over_time.buckets });
+    } catch (err) {
+      console.error('Erreur bandwidth-by-ip:', err.message);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.post('/api/top-bandwidth', async (req, res) => {
     try {
       const { timeRange, size = 10, type = 'source' } = req.body;
@@ -147,6 +175,50 @@ function mountApiRoutes(app, esClient, logService) {
       console.error('Erreur consumer-samples:', err.message);
       res.status(500).json({ error: err.message });
     }
+  });
+
+  // --- Mock endpoints for local/dev testing ---
+  // In-memory store (simple, non-persistent)
+  const _users = [
+    { id: 1, username: 'admin', email: 'admin@example.com', role: 'admin', createdAt: new Date().toISOString() },
+    { id: 2, username: 'user', email: 'user@example.com', role: 'user', createdAt: new Date().toISOString() }
+  ];
+  let _nextUserId = 3;
+  let _settings = { apiBase: process.env.FRONTEND_URL || 'http://localhost:5173', pollMs: 2000 };
+
+  app.get('/api/users', (req, res) => {
+    res.json({ users: _users });
+  });
+
+  app.delete('/api/users/:id', (req, res) => {
+    const id = Number(req.params.id);
+    const idx = _users.findIndex(u => u.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'user not found' });
+    _users.splice(idx, 1);
+    res.json({ ok: true });
+  });
+
+  app.get('/api/settings', (req, res) => {
+    res.json(_settings);
+  });
+
+  app.post('/api/settings', (req, res) => {
+    const body = req.body || {};
+    _settings = { ..._settings, ...body };
+    res.json(_settings);
+  });
+
+  // Simple current-user endpoint (mock)
+  app.get('/api/me', (req, res) => {
+    // In a real app, read token/session. Here we return admin for dev convenience.
+    res.json({ user: _users[0] });
+  });
+
+  app.post('/api/me', (req, res) => {
+    const body = req.body || {};
+    // merge into first user
+    _users[0] = { ..._users[0], ...body };
+    res.json({ user: _users[0] });
   });
 }
 

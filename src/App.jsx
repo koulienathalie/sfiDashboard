@@ -3,6 +3,10 @@ import { ThemeProvider, CssBaseline } from '@mui/material'
 import { SignUpComponent } from './components/SignUpComponent'
 import { LogInComponent } from './components/LogInComponent'
 import { DataVisualization } from './components/DataVisualization'
+import SettingsPage from './components/SettingsPage'
+import ProfilePage from './components/ProfilePage'
+import TopBar from './components/TopBar'
+import { NavProvider } from './context/NavContext'
 import theme from './theme'
 
 function App() {
@@ -10,12 +14,17 @@ function App() {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <BrowserRouter>
-                <Routes>
+                <NavProvider>
+                    <TopBar />
+                    <Routes>
                     <Route path="/" element={<Navigate to="/visualization" replace />} />
                     <Route path="/auth/signup" element={<SignUpComponent />} />
                     <Route path="/auth/login" element={<LogInComponent />} />
                     <Route path="/visualization" element={<DataVisualization />} />
-                </Routes>
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    </Routes>
+                </NavProvider>
             </BrowserRouter>
         </ThemeProvider>
     )

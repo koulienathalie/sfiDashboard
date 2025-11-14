@@ -1,5 +1,7 @@
 import { Menu, MenuItem, Grid, Box, Typography, Stack } from '@mui/material'
 import { Timeline, Lan, SyncAlt, Dns } from '@mui/icons-material'
+import { useNavigate } from 'react-router-dom'
+import { useNav } from '../../context/NavContext'
 
 const makeIcon = (IconComp) => <IconComp sx={{ color: '#B3B3B3' }} />
 
@@ -29,9 +31,18 @@ const listMenuItems = [
         page: 'service',
         icon: makeIcon(Dns),
     },
+    {
+        title: 'Bande passante (temps réel)',
+        descript: 'Visualisez l’utilisation de la bande passante en temps réel à partir d’Elasticsearch.',
+        page: 'bandwidth',
+        icon: makeIcon(Lan),
+    },
 ]
 
-export function VisualizationMenu({ anchorEl, handleMenuClose, setSubItemActive }) {
+export function VisualizationMenu({ anchorEl, handleMenuClose }) {
+    const navigate = useNavigate()
+    const { setSubItemActive } = useNav()
+
     return (
         <Menu
             elevation={0}
@@ -82,7 +93,8 @@ export function VisualizationMenu({ anchorEl, handleMenuClose, setSubItemActive 
                             <MenuItem
                                 onClick={() => {
                                     setSubItemActive(item)
-                                    handleMenuClose
+                                    handleMenuClose()
+                                    navigate('/visualization')
                                 }}
                                 sx={{
                                     display: 'flex',
