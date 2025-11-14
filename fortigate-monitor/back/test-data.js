@@ -59,14 +59,22 @@ async function testData() {
                     console.log(`   ✅ ${field.padEnd(20)} : ${count} docs`);
                 }
             } catch (e) {
-                // Champ n'existe pas
+                console.debug(`   ❌ ${field.padEnd(20)} : ${e.message}`);
             }
         }
 
-        // 2.b Analyse détaillée de la bande passante (somme, top sources, histogramme)
+        // 2. Analyse détaillée de la bande passante (somme, top sources, histogramme)
         console.log('\n2️⃣ Analyse détaillée de la bande passante:');
         try {
-            const range = { gte: 'now-1h', lte: 'now' };
+            // Window: De 06h30 aujourd'hui jusqu'à maintenant 
+            const now = new Date();
+            const start = new Date(now);
+            start.setHours(6, 30, 0, 0);
+            // If start is in the future (we're before 06:30), use yesterday 06:30
+            if (start > now) {
+                start.setDate(start.getDate() - 1);
+            }
+            const range = { gte: start.toISOString(), lte: now.toISOString() };
             const bwAgg = await client.search({
                 index: process.env.ES_INDEX,
                 size: 0,
@@ -90,7 +98,7 @@ async function testData() {
 
             const tot = bwAgg.aggregations?.total_bytes?.value || 0;
             const avg = bwAgg.aggregations?.avg_bytes?.value || 0;
-            console.log(`   → Période analysée: dernière heure (now-1h → now)`);
+            console.log(`   → Période analysée: ${start.toLocaleString('fr-FR')} → ${now.toLocaleString('fr-FR')}`);
             console.log(`   → Total octets (network.bytes): ${tot} (${(tot/1024/1024).toFixed(2)} MB)`);
             console.log(`   → Moyenne octets par doc: ${avg.toFixed(2)}`);
 
