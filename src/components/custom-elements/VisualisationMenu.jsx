@@ -29,6 +29,12 @@ const listMenuItems = [
         page: 'service',
         icon: makeIcon(Dns),
     },
+    {
+        title: 'Bande passante (temps réel)',
+        descript: 'Visualisez l’utilisation de la bande passante en temps réel à partir d’Elasticsearch.',
+        page: 'bandwidth',
+        icon: makeIcon(Lan),
+    },
 ]
 
 export function VisualizationMenu({ anchorEl, handleMenuClose, setSubItemActive }) {
