@@ -25,7 +25,7 @@ export default function TopBar() {
         <Box sx={{ ml: 8 }}>
           <Stack direction="row" spacing={8}>
             {navItems.map((item, idx) => {
-              const isActive = item === 'Tableau de bord' ? !!subItemActive : (item === 'Paramètres' ? location.pathname.startsWith('/settings') : location.pathname.startsWith('/visualization') && !subItemActive)
+              const isActive = item === 'Tableau de bord' ? !!subItemActive : (item === 'Paramètres' ? location.pathname.startsWith('/settings') : item === 'Rapports' ? location.pathname.startsWith('/reports') : location.pathname.startsWith('/visualization') && !subItemActive)
               return (
                 <Box key={idx}>
                   <Button
@@ -34,6 +34,8 @@ export default function TopBar() {
                       if (item === 'Tableau de bord') {
                         anchorEl ? handleMenuClose() : handleMenuOpen()
                         navigate('/visualization')
+                      } else if (item === 'Rapports') {
+                        navigate('/reports')
                       } else if (item === 'Paramètres') {
                         navigate('/settings')
                       } else {
