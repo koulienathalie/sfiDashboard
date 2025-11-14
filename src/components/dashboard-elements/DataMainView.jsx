@@ -2,7 +2,7 @@ import { ChartView } from './ChartView'
 import { FlowView } from './FlowView'
 import { IpView } from './IpView'
 import { ServiceView } from './ServiceView'
-import { BandwidthView } from './BandwidthView'
+import BandwidthView from './BandwidthView'
 import { Grid, Paper, Box } from '@mui/material'
 import SocketStatus from '../SocketStatus'
 
@@ -11,7 +11,7 @@ export function DataMainView({ page }) {
 	if (!page || page === 'view') {
 		return (
 			<>
-				<Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}><SocketStatus /></Box>
+				<Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}><SocketStatus /></Box>
 				<Grid container spacing={2}>
 					<Grid item xs={12} md={8}>
 						<Paper sx={{ p: 1 }}>
@@ -46,13 +46,13 @@ export function DataMainView({ page }) {
 
 	switch (page) {
 		case 'ipsource':
-			return <IpView />
+			return <Box sx={{ p: 3, pt: { xs: 10, sm: 9 }, mt: { xs: 2, sm: 1 } }}><IpView /></Box>
 		case 'flow':
-			return <FlowView />
+			return <Box sx={{ p: 3, pt: { xs: 10, sm: 9 }, mt: { xs: 2, sm: 1 } }}><FlowView /></Box>
 		case 'bandwidth':
-			return <BandwidthView />
+			return <Box sx={{ p: 3, pt: { xs: 10, sm: 9 }, mt: { xs: 2, sm: 1 } }}><BandwidthView /></Box>
 		case 'service':
-			return <ServiceView />
+			return <Box sx={{ p: 3, pt: { xs: 10, sm: 9 }, mt: { xs: 2, sm: 1 } }}><ServiceView /></Box>
 		default:
 			return null
 	}
