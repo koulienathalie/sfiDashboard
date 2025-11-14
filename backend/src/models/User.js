@@ -1,34 +1,14 @@
-import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../databases/Sequelize.js";
-class User extends Model{ }
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../databases/Sequelize');
 
-User.init(
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        firstName: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        lastName: {
-            type: DataTypes.STRING,
-        },
-        email: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        password: {
-            type: DataTypes.STRING,
-            allowNull: false
-        }
-    },
-    {
-        sequelize,
-        modelName: 'User',
-    },
-);
+const User = sequelize.define('User', {
+  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+  firstName: { type: DataTypes.STRING, allowNull: false },
+  lastName: { type: DataTypes.STRING },
+  email: { type: DataTypes.STRING, allowNull: false, unique: true },
+  password: { type: DataTypes.STRING, allowNull: false }
+}, {
+  modelName: 'User'
+});
 
-export { User }
+module.exports = { User };
