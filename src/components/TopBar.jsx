@@ -14,6 +14,10 @@ export default function TopBar() {
   const { subItemActive } = useNav()
   const navItems = ['Tableau de bord', 'Rapports', 'Alertes', 'Paramètres']
 
+  // Ne pas afficher la TopBar sur les pages d'authentification
+  const isAuthPage = location.pathname === '/auth/login' || location.pathname === '/auth/signup'
+  if (isAuthPage) return null
+
   const handleMenuOpen = () => setAnchorEl(toolbarRef.current)
   const handleMenuClose = () => setAnchorEl(null)
 

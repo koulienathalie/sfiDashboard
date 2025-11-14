@@ -18,7 +18,9 @@ export const WebSocketProvider = ({ children }) => {
         }
 
         // 🔌 Connexion Socket.IO
-        const socket = io(import.meta.env.VITE_BACKEND_WS_URL || "http://localhost:3001", {
+        const wsUrl = import.meta.env.VITE_BACKEND_WS_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001'
+        console.log('[WebSocketContext] Connecting to:', wsUrl)
+        const socket = io(wsUrl, {
             auth: { token },
             transports: ["websocket"],
         });

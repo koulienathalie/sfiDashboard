@@ -136,7 +136,8 @@ function BandwidthView() {
         fetchTopSources()
         fetchProtocols()
 
-        const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+        const socketUrl = import.meta.env.VITE_BACKEND_WS_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001'
+        console.log('[BandwidthView] Connecting to:', socketUrl)
         const socket = io(socketUrl, { transports: ['websocket'] })
         socketRef.current = socket
 

@@ -23,11 +23,15 @@ export default function ProfilePage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/me')
-        if (!res.ok) throw new Error('no /api/me')
+        const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/api/me'
+        console.log('[ProfilePage] Chargement depuis:', apiUrl)
+        const res = await fetch(apiUrl)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
+        console.log('[ProfilePage] Profil chargé:', data)
         setProfile(data.user || data)
       } catch (err) {
+        console.error('[ProfilePage] Erreur:', err)
         setProfile({ firstName: '', lastName: '', email: '', role: 'user', createdAt: new Date().toISOString() })
         setNotice({ severity: 'warning', message: 'Mode dégradé: impossible de charger le profil' })
       } finally {
@@ -40,13 +44,14 @@ export default function ProfilePage() {
   async function save() {
     setSaving(true)
     try {
+      const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/api/me'
       const body = { firstName: profile.firstName, lastName: profile.lastName, email: profile.email }
       if (password) {
         if (password !== passwordConfirm) throw new Error('Les mots de passe ne correspondent pas')
         if (password.length < 6) throw new Error('Le mot de passe doit contenir au moins 6 caractères')
         body.password = password
       }
-      const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err.message || 'save failed')
@@ -66,7 +71,8 @@ export default function ProfilePage() {
 
   async function signOut() {
     try {
-      await fetch((import.meta.env.VITE_API_URL || '') + '/auth/signout', { method: 'POST' })
+      const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/auth/signout'
+      await fetch(apiUrl, { method: 'POST' })
       window.location.href = '/login'
     } catch (err) {
       setNotice({ severity: 'error', message: 'Impossible de se déconnecter' })
