@@ -176,6 +176,50 @@ function mountApiRoutes(app, esClient, logService) {
       res.status(500).json({ error: err.message });
     }
   });
+
+  // --- Mock endpoints for local/dev testing ---
+  // In-memory store (simple, non-persistent)
+  const _users = [
+    { id: 1, username: 'admin', email: 'admin@example.com', role: 'admin', createdAt: new Date().toISOString() },
+    { id: 2, username: 'user', email: 'user@example.com', role: 'user', createdAt: new Date().toISOString() }
+  ];
+  let _nextUserId = 3;
+  let _settings = { apiBase: process.env.FRONTEND_URL || 'http://localhost:5173', pollMs: 2000 };
+
+  app.get('/api/users', (req, res) => {
+    res.json({ users: _users });
+  });
+
+  app.delete('/api/users/:id', (req, res) => {
+    const id = Number(req.params.id);
+    const idx = _users.findIndex(u => u.id === id);
+    if (idx === -1) return res.status(404).json({ error: 'user not found' });
+    _users.splice(idx, 1);
+    res.json({ ok: true });
+  });
+
+  app.get('/api/settings', (req, res) => {
+    res.json(_settings);
+  });
+
+  app.post('/api/settings', (req, res) => {
+    const body = req.body || {};
+    _settings = { ..._settings, ...body };
+    res.json(_settings);
+  });
+
+  // Simple current-user endpoint (mock)
+  app.get('/api/me', (req, res) => {
+    // In a real app, read token/session. Here we return admin for dev convenience.
+    res.json({ user: _users[0] });
+  });
+
+  app.post('/api/me', (req, res) => {
+    const body = req.body || {};
+    // merge into first user
+    _users[0] = { ..._users[0], ...body };
+    res.json({ user: _users[0] });
+  });
 }
 
 module.exports = { mountApiRoutes };
