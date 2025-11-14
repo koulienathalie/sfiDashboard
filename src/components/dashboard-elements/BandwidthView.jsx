@@ -275,8 +275,8 @@ export function BandwidthView() {
                                 <Typography fontSize={12} color="text.secondary">{s.count} connexions</Typography>
                             </Box>
                             <Box sx={{ textAlign: 'right' }}>
-                                <Typography fontWeight={700}>{s.mb.toFixed(2)} MB</Typography>
-                                <Typography fontSize={12} color="text.secondary">{s.mbs.toFixed(3)} MB/s</Typography>
+                                <Typography fontWeight={700}>{(s.mb || 0).toFixed(2)} MB</Typography>
+                                <Typography fontSize={12} color="text.secondary">{((s.mbs || 0)).toFixed(3)} MB/s</Typography>
                             </Box>
                         </Box>
                     ))}
@@ -304,7 +304,7 @@ export function BandwidthView() {
                                     <Typography fontSize={12} color="text.secondary">{p.count} paquets</Typography>
                                 </Box>
                                 <Box sx={{ textAlign: 'right' }}>
-                                    <Typography fontWeight={700}>{(p.mb).toFixed(2)} MB</Typography>
+                                    <Typography fontWeight={700}>{((p.mb || 0)).toFixed(2)} MB</Typography>
                                 </Box>
                             </Box>
                         ))}
@@ -330,7 +330,7 @@ export function BandwidthView() {
                                     <Typography fontSize={12} color="text.secondary">{a.count} connexions</Typography>
                                 </Box>
                                 <Box sx={{ textAlign: 'right' }}>
-                                    <Typography fontWeight={700}>{(a.mb).toFixed(2)} MB</Typography>
+                                    <Typography fontWeight={700}>{((a.mb || 0)).toFixed(2)} MB</Typography>
                                 </Box>
                             </Box>
                         ))}
