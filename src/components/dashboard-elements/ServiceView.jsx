@@ -104,7 +104,7 @@ export function ServiceView() {
 
 	return (
 		<Grid container spacing={2}>
-			<Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+			<Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
 				<FormControl size="small" sx={{ minWidth: 120 }}>
 					<InputLabel id="topn-label">Top N</InputLabel>
 					<Select labelId="topn-label" value={topNSelection} label="Top N" onChange={(e) => setTopNSelection(Number(e.target.value))}>
