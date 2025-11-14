@@ -26,7 +26,7 @@ export default function InterfaceTestData() {
   const [topConsumers, setTopConsumers] = useState([]);
   const [health, setHealth] = useState(null);
 
-  useEffect(() => {
+    useEffect(() => {
     let mounted = true;
     const range = getToday630Range();
 
@@ -36,15 +36,16 @@ export default function InterfaceTestData() {
       try {
         const [bwRes, topRes, healthRes] = await Promise.all([
           fetch(`${API_URL}/bandwidth`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ timeRange: { from: range.from, to: range.to }, interval: '1m' }) }),
-          fetch(`${API_URL}/top-bandwidth`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ timeRange: { from: range.from, to: range.to }, size: 10 }) }),
+          // Request top 20 consumers
+          fetch(`${API_URL}/top-bandwidth`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ timeRange: { from: range.from, to: range.to }, size: 20 }) }),
           fetch(`${API_URL}/health`)
         ]);
 
         const [bwData, topData, healthData] = await Promise.all([bwRes.json(), topRes.json(), healthRes.json()]);
 
         if (!mounted) return;
-        setBandwidth(bwData);
-        setTopConsumers(topData || []);
+  setBandwidth(bwData);
+  setTopConsumers(topData || []);
         setHealth(healthData);
       } catch (e) {
         if (!mounted) return;
@@ -57,6 +58,43 @@ export default function InterfaceTestData() {
     fetchAll();
     return () => { mounted = false; };
   }, []);
+
+  const [expanded, setExpanded] = useState({});
+
+  const toggleExpand = (idx) => {
+    setExpanded(prev => {
+      const next = { ...prev, [idx]: !prev[idx] };
+      // if we're expanding and samples not present, fetch them
+      if (next[idx] && topConsumers[idx] && !topConsumers[idx].samples) {
+        fetchSamplesForConsumer(idx).catch(e => console.debug('fetch sample error', e));
+      }
+      return next;
+    });
+  };
+
+  async function fetchSamplesForConsumer(idx) {
+    try {
+      const consumer = topConsumers[idx];
+      if (!consumer) return;
+      const ip = consumer.key || consumer.ip;
+      if (!ip) return;
+      const range = getToday630Range();
+      const res = await fetch(`${API_URL}/consumer-samples`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ timeRange: { from: range.from, to: range.to }, ip, field: 'source.ip', size: 3 })
+      });
+      const data = await res.json();
+      const hits = data.hits || [];
+      setTopConsumers(prev => {
+        const next = [...prev];
+        next[idx] = { ...next[idx], samples: hits };
+        return next;
+      });
+    } catch (e) {
+      console.error('Erreur fetchSamplesForConsumer', e);
+    }
+  }
 
   const chartData = useMemo(() => {
     if (!bandwidth) return [];
@@ -108,14 +146,56 @@ export default function InterfaceTestData() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-slate-800 p-4 rounded">
-                <h3 className="font-semibold mb-2">Top consommateurs</h3>
+                <h3 className="font-semibold mb-2">Top consommateurs (20)</h3>
                 {topConsumers && topConsumers.length > 0 ? (
                   <table className="w-full text-sm">
-                    <thead className="text-slate-400 text-left"><tr><th>IP</th><th className="text-right">Bytes</th></tr></thead>
+                    <thead className="text-slate-400 text-left"><tr>
+                      <th>IP</th>
+                      <th className="text-right">Bytes</th>
+                      <th className="text-right">Connexions</th>
+                      <th className="text-right">Moyenne</th>
+                      <th className="text-right">% du total</th>
+                      <th></th>
+                    </tr></thead>
                     <tbody>
-                      {topConsumers.map((t,i) => (
-                        <tr key={i} className="border-t border-slate-700"><td className="py-2">{t.key || t.ip}</td><td className="py-2 text-right">{humanBytes(t.total_bytes?.value || t.bytes || t.doc_count || 0)}</td></tr>
-                      ))}
+                      {topConsumers.map((t,i) => {
+                        const bytes = t.total_bytes?.value || t.bytes || t.doc_count || 0;
+                        const conns = t.connection_count?.value || t.doc_count || 0;
+                        const avg = conns > 0 ? Math.round(bytes / conns) : 0;
+                        const pct = bandwidth && (bandwidth.total || bandwidth.aggregations?.total_bytes?.value) ? (bytes / (bandwidth.total || bandwidth.aggregations?.total_bytes?.value) * 100) : 0;
+                        return (
+                          <React.Fragment key={i}>
+                            <tr className="border-t border-slate-700 hover:bg-slate-700">
+                              <td className="py-2">{t.key || t.ip}</td>
+                              <td className="py-2 text-right">{humanBytes(bytes)}</td>
+                              <td className="py-2 text-right">{conns}</td>
+                              <td className="py-2 text-right">{humanBytes(avg)}</td>
+                              <td className="py-2 text-right">{pct > 0 ? pct.toFixed(2) + '%' : '-'}</td>
+                              <td className="py-2 text-right"><button className="text-xs text-blue-300" onClick={() => toggleExpand(i)}>{expanded[i] ? 'Fermer' : 'Détails'}</button></td>
+                            </tr>
+                            {expanded[i] && (
+                              <tr>
+                                <td colSpan={6} className="bg-slate-900 p-3 text-xs text-slate-300">
+                                  {t.samples && t.samples.length > 0 ? (
+                                    <div className="space-y-2">
+                                      {t.samples.map((s, si) => (
+                                        <div key={si} className="p-2 bg-slate-800 rounded">
+                                          <div className="text-xs text-slate-400">{new Date(s._source?.['@timestamp'] || s._source?.timestamp || s._source?.time || s._id).toLocaleString()}</div>
+                                          <div className="text-sm font-medium">{s._source?.source?.ip || s._source?.source_ip || s._source?.srcip || s._source?.source?.address || s._source?.source || '—'} → {s._source?.destination?.ip || s._source?.dstip || s._source?.destination || '—'}</div>
+                                          <div className="text-xs text-slate-300 mt-1">Bytes: {humanBytes(s._source?.network?.bytes || s._source?.bytes || s._source?.sentbyte || s._source?.rcvdbyte || 0)}</div>
+                                          <pre className="text-[11px] max-h-48 overflow-auto mt-2 text-slate-300">{JSON.stringify(s._source, null, 2)}</pre>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <pre className="whitespace-pre-wrap">{JSON.stringify(t, null, 2)}</pre>
+                                  )}
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
                     </tbody>
                   </table>
                 ) : <div className="text-slate-400">Aucune donnée</div>}
