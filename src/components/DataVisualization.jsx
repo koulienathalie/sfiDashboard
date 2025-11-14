@@ -67,105 +67,92 @@ export function DataVisualization() {
             sx={{
                 minHeight: '100vh',
                 background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)',
-                p: { xs: 2, sm: 3, md: 4 },
                 pt: { xs: 10, sm: 9, md: 8 },
                 mt: { xs: 2, sm: 1 },
+                p: (subItemActive?.page === 'bandwidth' || subItemActive?.page === 'ipsource' || subItemActive?.page === 'flow' || subItemActive?.page === 'service') ? 0 : { xs: 2, sm: 3, md: 4 },
             }}
         >
-            <Box sx={{ maxWidth: '1800px', mx: 'auto' }}>
-                <Grid container spacing={3}>
-                    <Grid item xs={12} lg={subItemActive?.page === 'flow' ? 9.5 : 12}>
-                        {/* Header Card */}
-                        <Paper 
-                            elevation={0}
-                            sx={{ 
-                                p: 3, 
-                                mb: 3,
-                                background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                                border: '1px solid',
-                                borderColor: 'divider',
-                                borderRadius: 2,
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                            }}
-                        >
-                            <Box sx={{ 
-                                display: 'flex', 
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                flexWrap: 'wrap',
-                                gap: 2
-                            }}>
-                                <Box>
-                                    <Breadcrumbs 
-                                        separator={<NavigateNext fontSize="small" sx={{ color: 'text.disabled' }} />}
-                                        sx={{ mb: 1 }}
-                                    >
-                                        {breadcrumbs}
-                                    </Breadcrumbs>
-                                    {subItemActive && (
-                                        <Typography 
-                                            variant="h4" 
-                                            sx={{ 
-                                                fontWeight: 700,
-                                                color: 'text.primary',
-                                                letterSpacing: '-0.5px'
+            {(subItemActive?.page === 'bandwidth' || subItemActive?.page === 'ipsource' || subItemActive?.page === 'flow' || subItemActive?.page === 'service') ? (
+                // Full width pages - no header, only top padding for TopBar
+                <Box sx={{ width: '100%', height: '100%', px: { xs: 1, sm: 2, md: 3 } }}>
+                    <DataMainView page={subItemActive?.page} />
+                </Box>
+            ) : (
+                // Dashboard view with header
+                <Box sx={{ maxWidth: '1800px', mx: 'auto', width: '100%' }}>
+                    <Grid container spacing={3}>
+                        <Grid item xs={12} lg={subItemActive?.page === 'flow' ? 9.5 : 12}>
+                            {/* Header Card */}
+                            <Paper 
+                                elevation={0}
+                                sx={{ 
+                                    p: 3, 
+                                    mb: 3,
+                                    background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    borderRadius: 2,
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                                }}
+                            >
+                                <Box sx={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    flexWrap: 'wrap',
+                                    gap: 2
+                                }}>
+                                    <Box>
+                                        <Breadcrumbs 
+                                            separator={<NavigateNext fontSize="small" sx={{ color: 'text.disabled' }} />}
+                                            sx={{ mb: 1 }}
+                                        >
+                                            {breadcrumbs}
+                                        </Breadcrumbs>
+                                        {subItemActive && (
+                                            <Typography 
+                                                variant="h4" 
+                                                sx={{ 
+                                                    fontWeight: 700,
+                                                    color: 'text.primary',
+                                                    letterSpacing: '-0.5px'
+                                                }}
+                                            >
+                                                {subItemActive.title}
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                    
+                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                        <Chip
+                                            icon={<AccessTime sx={{ fontSize: 18 }} />}
+                                            label="Temps réel"
+                                            size="small"
+                                            sx={{
+                                                bgcolor: 'primary.main',
+                                                color: 'white',
+                                                fontWeight: 500,
+                                                '& .MuiChip-icon': { color: 'white' }
+                                            }}
+                                        />
+                                        <IconButton
+                                            size="small"
+                                            sx={{
+                                                bgcolor: 'action.hover',
+                                                '&:hover': {
+                                                    bgcolor: 'action.selected',
+                                                    transform: 'rotate(180deg)',
+                                                    transition: 'transform 0.3s ease'
+                                                }
                                             }}
                                         >
-                                            {subItemActive.title}
-                                        </Typography>
-                                    )}
+                                            <Loop sx={{ fontSize: 20 }} />
+                                        </IconButton>
+                                    </Box>
                                 </Box>
-                                
-                                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                    <Chip
-                                        icon={<AccessTime sx={{ fontSize: 18 }} />}
-                                        label="Temps réel"
-                                        size="small"
-                                        sx={{
-                                            bgcolor: 'primary.main',
-                                            color: 'white',
-                                            fontWeight: 500,
-                                            '& .MuiChip-icon': { color: 'white' }
-                                        }}
-                                    />
-                                    <IconButton
-                                        size="small"
-                                        sx={{
-                                            bgcolor: 'action.hover',
-                                            '&:hover': {
-                                                bgcolor: 'action.selected',
-                                                transform: 'rotate(180deg)',
-                                                transition: 'transform 0.3s ease'
-                                            }
-                                        }}
-                                    >
-                                        <Loop sx={{ fontSize: 20 }} />
-                                    </IconButton>
-                                </Box>
-                            </Box>
-                        </Paper>
+                            </Paper>
 
-                        {/* Main Content */}
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                background: 'white',
-                                border: '1px solid',
-                                borderColor: 'divider',
-                                borderRadius: 2,
-                                overflow: 'hidden',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                                minHeight: 'calc(100vh - 280px)'
-                            }}
-                        >
-                            <Box sx={{ p: 3 }}>
-                                <DataMainView page={subItemActive?.page} />
-                            </Box>
-                        </Paper>
-                    </Grid>
-
-                    {subItemActive?.page === 'flow' && (
-                        <Grid item xs={12} lg={2.5}>
+                            {/* Main Content */}
                             <Paper
                                 elevation={0}
                                 sx={{
@@ -173,19 +160,40 @@ export function DataVisualization() {
                                     border: '1px solid',
                                     borderColor: 'divider',
                                     borderRadius: 2,
-                                    p: 2,
+                                    overflow: 'hidden',
                                     boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                                    position: { lg: 'sticky' },
-                                    top: { lg: 130 },
-                                    height: 'fit-content'
+                                    minHeight: 'calc(100vh - 280px)'
                                 }}
                             >
-                                <MaxBytes />
+                                <Box sx={{ p: 3 }}>
+                                    <DataMainView page={subItemActive?.page} />
+                                </Box>
                             </Paper>
                         </Grid>
-                    )}
-                </Grid>
-            </Box>
+
+                        {subItemActive?.page === 'flow' && (
+                            <Grid item xs={12} lg={2.5}>
+                                <Paper
+                                    elevation={0}
+                                    sx={{
+                                        background: 'white',
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        borderRadius: 2,
+                                        p: 2,
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                        position: { lg: 'sticky' },
+                                        top: { lg: 130 },
+                                        height: 'fit-content'
+                                    }}
+                                >
+                                    <MaxBytes />
+                                </Paper>
+                            </Grid>
+                        )}
+                    </Grid>
+                </Box>
+            )}
         </Box>
     )
 }

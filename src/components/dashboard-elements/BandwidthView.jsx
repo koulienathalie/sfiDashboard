@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { Box, Typography, Dialog, DialogTitle, DialogContent, Button, CircularProgress, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Paper, Chip, Stack, Divider } from '@mui/material'
+import { Box, Typography, Dialog, DialogTitle, DialogContent, Button, CircularProgress, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Paper, Chip, Stack, Divider, Grid, alpha } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
@@ -309,10 +309,10 @@ function BandwidthView() {
     const totalMB = Number(toMB(total).toFixed(2))
 
     return (
-        <Box>
+        <Box sx={{ width: '100%' }}>
             {/* Header avec stats */}
-            <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Paper elevation={0} sx={{ p: 3, mb: 3, borderRadius: 2, background: 'linear-gradient(135deg, #02647E 0%, #72BDD1 100%)', color: 'white' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <TrendingUpIcon sx={{ fontSize: 40, color: 'white' }} />
                         <Box>
@@ -341,7 +341,7 @@ function BandwidthView() {
                         </Tooltip>
                         <Paper elevation={3} sx={{ px: 3, py: 1.5, bgcolor: 'white' }}>
                             <Typography fontSize={12} color="text.secondary">Total (5 min)</Typography>
-                            <Typography fontSize={20} fontWeight={700} color="primary.main">
+                            <Typography fontSize={20} fontWeight={700} sx={{ color: '#02647E' }}>
                                 {totalMB.toLocaleString()} MB
                             </Typography>
                         </Paper>
@@ -350,17 +350,17 @@ function BandwidthView() {
             </Paper>
 
             {/* Graphique */}
-            <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
+            <Paper elevation={0} sx={{ p: 3, mb: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
                 <Typography fontSize={18} fontWeight={600} mb={2} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <TrendingUpIcon color="primary" />
+                    <TrendingUpIcon sx={{ color: '#02647E' }} />
                     Graphique de débit
                 </Typography>
                 <LineChart
                     xAxis={[{ scaleType: 'point', data: xData, showMark: false }]}
                     series={[
-                        { data: totalSeries, label: 'Débit (MB/s)', color: '#1976d2', area: true },
-                        { data: sentSeries, label: 'Envoyé (MB)', color: '#29BAE2' },
-                        { data: recvSeries, label: 'Reçu (MB)', color: '#A1D490' }
+                        { data: totalSeries, label: 'Débit (MB/s)', color: '#02647E', area: true },
+                        { data: sentSeries, label: 'Envoyé (MB)', color: '#29BBE2' },
+                        { data: recvSeries, label: 'Reçu (MB)', color: '#52B57D' }
                     ]}
                     grid={{ vertical: true, horizontal: true }}
                     height={400}
@@ -369,168 +369,216 @@ function BandwidthView() {
                 />
             </Paper>
 
-            {/* Top sources */}
-            <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography fontSize={18} fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <WifiIcon color="success" />
-                        Top Sources IP
-                        <Chip label="Temps réel" size="small" color="success" sx={{ ml: 1 }} />
-                    </Typography>
-                    {topLoading ? (
-                        <CircularProgress size={24} />
-                    ) : (
-                        <Tooltip title="Actualiser">
-                            <IconButton size="small" onClick={fetchTopSources}>
-                                <RefreshIcon />
-                            </IconButton>
-                        </Tooltip>
-                    )}
-                </Box>
-                <Stack spacing={1.5}>
-                    {topSources.length === 0 && (
-                        <Typography color="text.secondary" textAlign="center" py={2}>
-                            Aucune donnée disponible
-                        </Typography>
-                    )}
-                    {topSources.map((s) => (
-                        <Paper
-                            key={s.ip}
-                            elevation={1}
-                            sx={{
-                                p: 2,
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                '&:hover': {
-                                    elevation: 4,
-                                    transform: 'translateY(-2px)',
-                                    bgcolor: 'action.hover'
-                                }
-                            }}
-                            onClick={() => openSamplesForIp(s.ip)}
-                        >
-                            <Box>
-                                <Typography fontWeight={700} color="primary" sx={{ fontFamily: 'monospace' }}>
-                                    {s.ip}
-                                </Typography>
-                                <Typography fontSize={12} color="text.secondary">
-                                    {s.count} connexions
-                                </Typography>
-                            </Box>
-                            <Box sx={{ textAlign: 'right' }}>
-                                <Typography fontWeight={700} fontSize={18}>
-                                    {(s.mb || 0).toFixed(2)} MB
-                                </Typography>
-                                <Typography fontSize={12} color="success.main" fontWeight={600}>
-                                    {((s.mbs || 0)).toFixed(3)} MB/s
-                                </Typography>
-                            </Box>
-                        </Paper>
-                    ))}
-                </Stack>
-            </Paper>
-
-            {/* Protocoles et Applications */}
-            <Box sx={{ display: 'flex', gap: 3 }}>
-                {/* Protocoles */}
-                <Paper elevation={2} sx={{ p: 3, flex: 1, borderRadius: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Typography fontSize={18} fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <RouterIcon color="secondary" />
-                            Protocoles
-                        </Typography>
-                        {protocolsLoading ? (
-                            <CircularProgress size={24} />
-                        ) : (
-                            <Tooltip title="Actualiser">
-                                <IconButton size="small" onClick={fetchProtocols}>
-                                    <RefreshIcon />
-                                </IconButton>
-                            </Tooltip>
-                        )}
-                    </Box>
-                    <Stack spacing={1.5}>
-                        {topProtocols.length === 0 && (
-                            <Typography color="text.secondary" textAlign="center" py={2}>
-                                Aucune donnée
+            {/* Grid layout pour Top sources et détails */}
+            <Grid container spacing={3} sx={{ mb: 3, width: '100%' }}>
+                {/* Top sources - Pleine largeur en petit écran, 2/3 en grand écran */}
+                <Grid item xs={12} lg={8}>
+                    <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography fontSize={18} fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <WifiIcon sx={{ color: '#52B57D' }} />
+                                Top Sources IP
+                                <Chip label="Temps réel" size="small" sx={{ bgcolor: alpha('#52B57D', 0.2), color: '#52B57D', ml: 1 }} />
                             </Typography>
-                        )}
-                        {topProtocols.map((p) => (
-                            <Paper
-                                key={p.protocol}
-                                elevation={1}
-                                sx={{
-                                    p: 2,
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    bgcolor: 'background.default'
-                                }}
-                            >
-                                <Box>
-                                    <Typography fontWeight={700}>{p.protocol}</Typography>
-                                    <Typography fontSize={12} color="text.secondary">
-                                        {p.count} paquets
-                                    </Typography>
-                                </Box>
-                                <Typography fontWeight={700} color="secondary.main">
-                                    {((p.mb || 0)).toFixed(2)} MB
+                            {topLoading ? (
+                                <CircularProgress size={24} />
+                            ) : (
+                                <Tooltip title="Actualiser">
+                                    <IconButton size="small" onClick={fetchTopSources}>
+                                        <RefreshIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </Box>
+                        <Stack spacing={1.5}>
+                            {topSources.length === 0 && (
+                                <Typography color="text.secondary" textAlign="center" py={2}>
+                                    Aucune donnée disponible
                                 </Typography>
-                            </Paper>
-                        ))}
+                            )}
+                            {topSources.map((s) => (
+                                <Paper
+                                    key={s.ip}
+                                    elevation={0}
+                                    sx={{
+                                        p: 2,
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        bgcolor: alpha('#02647E', 0.02),
+                                        '&:hover': {
+                                            bgcolor: alpha('#02647E', 0.08),
+                                            borderColor: '#02647E',
+                                            transform: 'translateY(-2px)',
+                                            boxShadow: 1
+                                        }
+                                    }}
+                                    onClick={() => openSamplesForIp(s.ip)}
+                                >
+                                    <Box>
+                                        <Typography fontWeight={700} color="primary" sx={{ fontFamily: 'monospace' }}>
+                                            {s.ip}
+                                        </Typography>
+                                        <Typography fontSize={12} color="text.secondary">
+                                            {s.count} connexions
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ textAlign: 'right' }}>
+                                        <Typography fontWeight={700} fontSize={18} sx={{ color: '#02647E' }}>
+                                            {(s.mb || 0).toFixed(2)} MB
+                                        </Typography>
+                                        <Typography fontSize={12} sx={{ color: '#52B57D', fontWeight: 600 }}>
+                                            {((s.mbs || 0)).toFixed(3)} MB/s
+                                        </Typography>
+                                    </Box>
+                                </Paper>
+                            ))}
+                        </Stack>
+                    </Paper>
+                </Grid>
+
+                {/* Résumé rapide - 1/3 en grand écran */}
+                <Grid item xs={12} lg={4}>
+                    <Stack spacing={2} sx={{ height: '100%' }}>
+                        <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: alpha('#02647E', 0.05) }}>
+                            <Typography fontSize={12} sx={{ color: 'text.secondary', mb: 0.5 }}>Débit Total (5 min)</Typography>
+                            <Typography fontSize={28} fontWeight={700} sx={{ color: '#02647E' }}>
+                                {totalMB.toLocaleString()}
+                            </Typography>
+                            <Typography fontSize={12} sx={{ color: 'text.secondary' }}>MB</Typography>
+                        </Paper>
+
+                        <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: alpha('#29BBE2', 0.05) }}>
+                            <Typography fontSize={12} sx={{ color: 'text.secondary', mb: 0.5 }}>Top Sources</Typography>
+                            <Typography fontSize={28} fontWeight={700} sx={{ color: '#29BBE2' }}>
+                                {topSources.length}
+                            </Typography>
+                            <Typography fontSize={12} sx={{ color: 'text.secondary' }}>adresses</Typography>
+                        </Paper>
+
+                        <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', bgcolor: alpha('#F2C94C', 0.05) }}>
+                            <Typography fontSize={12} sx={{ color: 'text.secondary', mb: 0.5 }}>Services</Typography>
+                            <Typography fontSize={28} fontWeight={700} sx={{ color: '#F2C94C' }}>
+                                {topProtocols.length}
+                            </Typography>
+                            <Typography fontSize={12} sx={{ color: 'text.secondary' }}>Protocoles</Typography>
+                        </Paper>
                     </Stack>
-                </Paper>
+                </Grid>
+            </Grid>
+
+            {/* Protocoles et Applications en Grid */}
+            <Grid container spacing={3} sx={{ width: '100%' }}>
+                {/* Protocoles */}
+                <Grid item xs={12} md={6}>
+                    <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography fontSize={18} fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <RouterIcon sx={{ color: '#6D6D6D' }} />
+                                Protocoles
+                            </Typography>
+                            {protocolsLoading ? (
+                                <CircularProgress size={24} />
+                            ) : (
+                                <Tooltip title="Actualiser">
+                                    <IconButton size="small" onClick={fetchProtocols}>
+                                        <RefreshIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </Box>
+                        <Stack spacing={1.5}>
+                            {topProtocols.length === 0 && (
+                                <Typography color="text.secondary" textAlign="center" py={2}>
+                                    Aucune donnée
+                                </Typography>
+                            )}
+                            {topProtocols.map((p) => (
+                                <Paper
+                                    key={p.protocol}
+                                    elevation={0}
+                                    sx={{
+                                        p: 2,
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        bgcolor: alpha('#6D6D6D', 0.02),
+                                        '&:hover': { bgcolor: alpha('#6D6D6D', 0.08) }
+                                    }}
+                                >
+                                    <Box>
+                                        <Typography fontWeight={700}>{p.protocol}</Typography>
+                                        <Typography fontSize={12} color="text.secondary">
+                                            {p.count} paquets
+                                        </Typography>
+                                    </Box>
+                                    <Typography fontWeight={700} sx={{ color: '#6D6D6D' }}>
+                                        {((p.mb || 0)).toFixed(2)} MB
+                                    </Typography>
+                                </Paper>
+                            ))}
+                        </Stack>
+                    </Paper>
+                </Grid>
 
                 {/* Applications */}
-                <Paper elevation={2} sx={{ p: 3, flex: 1, borderRadius: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Typography fontSize={18} fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <StorageIcon color="warning" />
-                            Applications
-                        </Typography>
-                        {protocolsLoading ? (
-                            <CircularProgress size={24} />
-                        ) : (
-                            <Tooltip title="Actualiser">
-                                <IconButton size="small" onClick={fetchProtocols}>
-                                    <RefreshIcon />
-                                </IconButton>
-                            </Tooltip>
-                        )}
-                    </Box>
-                    <Stack spacing={1.5}>
-                        {topApplications.length === 0 && (
-                            <Typography color="text.secondary" textAlign="center" py={2}>
-                                Aucune donnée
+                <Grid item xs={12} md={6}>
+                    <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography fontSize={18} fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <StorageIcon sx={{ color: '#F2C94C' }} />
+                                Applications
                             </Typography>
-                        )}
-                        {topApplications.map((a) => (
-                            <Paper
-                                key={a.name}
-                                elevation={1}
-                                sx={{
-                                    p: 2,
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    bgcolor: 'background.default'
-                                }}
-                            >
-                                <Box>
-                                    <Typography fontWeight={700}>{a.name}</Typography>
-                                    <Typography fontSize={12} color="text.secondary">
-                                        {a.count} connexions
-                                    </Typography>
-                                </Box>
-                                <Typography fontWeight={700} color="warning.main">
-                                    {((a.mb || 0)).toFixed(2)} MB
+                            {protocolsLoading ? (
+                                <CircularProgress size={24} />
+                            ) : (
+                                <Tooltip title="Actualiser">
+                                    <IconButton size="small" onClick={fetchProtocols}>
+                                        <RefreshIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </Box>
+                        <Stack spacing={1.5}>
+                            {topApplications.length === 0 && (
+                                <Typography color="text.secondary" textAlign="center" py={2}>
+                                    Aucune donnée
                                 </Typography>
-                            </Paper>
-                        ))}
-                    </Stack>
-                </Paper>
-            </Box>
+                            )}
+                            {topApplications.map((a) => (
+                                <Paper
+                                    key={a.name}
+                                    elevation={0}
+                                    sx={{
+                                        p: 2,
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        bgcolor: alpha('#F2C94C', 0.02),
+                                        '&:hover': { bgcolor: alpha('#F2C94C', 0.08) }
+                                    }}
+                                >
+                                    <Box>
+                                        <Typography fontWeight={700}>{a.name}</Typography>
+                                        <Typography fontSize={12} color="text.secondary">
+                                            {a.count} connexions
+                                        </Typography>
+                                    </Box>
+                                    <Typography fontWeight={700} sx={{ color: '#F2C94C' }}>
+                                        {((a.mb || 0)).toFixed(2)} MB
+                                    </Typography>
+                                </Paper>
+                            ))}
+                        </Stack>
+                    </Paper>
+                </Grid>
+            </Grid>
 
             {/* Dialog des échantillons */}
             <Dialog open={samplesOpen} onClose={() => setSamplesOpen(false)} maxWidth="lg" fullWidth>

@@ -17,6 +17,19 @@ export default function TopBar() {
   const handleMenuOpen = () => setAnchorEl(toolbarRef.current)
   const handleMenuClose = () => setAnchorEl(null)
 
+  const isItemActive = (item) => {
+    if (item === 'Tableau de bord') {
+      return location.pathname === '/visualization'
+    } else if (item === 'Rapports') {
+      return location.pathname === '/reports'
+    } else if (item === 'Paramètres') {
+      return location.pathname === '/settings'
+    } else if (item === 'Alertes') {
+      return location.pathname === '/alerts'
+    }
+    return false
+  }
+
   return (
     <AppBar position="fixed" sx={{ backgroundColor: 'primary.main', color: 'common.white', boxShadow: 'none', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
       <Toolbar ref={toolbarRef} sx={{ display: 'flex', alignItems: 'center' }}>
@@ -25,7 +38,7 @@ export default function TopBar() {
         <Box sx={{ ml: 8 }}>
           <Stack direction="row" spacing={8}>
             {navItems.map((item, idx) => {
-              const isActive = item === 'Tableau de bord' ? !!subItemActive : (item === 'Paramètres' ? location.pathname.startsWith('/settings') : item === 'Rapports' ? location.pathname.startsWith('/reports') : location.pathname.startsWith('/visualization') && !subItemActive)
+              const isActive = isItemActive(item)
               return (
                 <Box key={idx}>
                   <Button
@@ -35,23 +48,41 @@ export default function TopBar() {
                         anchorEl ? handleMenuClose() : handleMenuOpen()
                         navigate('/visualization')
                       } else if (item === 'Rapports') {
+                        handleMenuClose()
                         navigate('/reports')
                       } else if (item === 'Paramètres') {
+                        handleMenuClose()
                         navigate('/settings')
-                      } else {
-                        // other pages
-                        navigate('/visualization')
+                      } else if (item === 'Alertes') {
+                        handleMenuClose()
+                        navigate('/alerts')
                       }
                     }}
                     endIcon={item === 'Tableau de bord' ? anchorEl ? <KeyboardArrowUp /> : <KeyboardArrowDown /> : null}
-                      sx={{
-                        fontSize: 16,
-                        textTransform: 'none',
-                        color: 'common.white',
-                        fontWeight: isActive ? 700 : 400,
-                        borderBottom: isActive ? '2px solid rgba(255,255,255,0.9)' : '2px solid transparent',
-                        pb: isActive ? '6px' : '8px'
-                      }}>
+                    sx={{
+                      fontSize: 16,
+                      textTransform: 'none',
+                      color: 'common.white',
+                      fontWeight: isActive ? 700 : 400,
+                      position: 'relative',
+                      pb: 1,
+                      pt: 1,
+                      transition: 'all 0.3s ease',
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        width: isActive ? '100%' : '0%',
+                        height: '3px',
+                        backgroundColor: 'white',
+                        transition: 'width 0.3s ease',
+                        borderRadius: '2px 2px 0 0'
+                      },
+                      '&:hover::after': {
+                        width: '100%'
+                      }
+                    }}>
                     {item}
 
                     {item === 'Tableau de bord' && (

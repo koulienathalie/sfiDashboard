@@ -46,13 +46,13 @@ export function DataMainView({ page }) {
 
 	switch (page) {
 		case 'ipsource':
-			return <Box sx={{ p: 3, pt: { xs: 10, sm: 9 }, mt: { xs: 2, sm: 1 } }}><IpView /></Box>
+			return <Box sx={{ width: '100%', p: 2, pt: { xs: 2, sm: 2 }, mt: 0 }}><IpView /></Box>
 		case 'flow':
-			return <Box sx={{ p: 3, pt: { xs: 10, sm: 9 }, mt: { xs: 2, sm: 1 } }}><FlowView /></Box>
+			return <Box sx={{ width: '100%', p: 0, pt: 0, mt: 0 }}><FlowView /></Box>
 		case 'bandwidth':
-			return <Box sx={{ p: 3, pt: { xs: 10, sm: 9 }, mt: { xs: 2, sm: 1 } }}><BandwidthView /></Box>
+			return <Box sx={{ width: '100%', p: 2, pt: { xs: 2, sm: 2 }, mt: 0 }}><BandwidthView /></Box>
 		case 'service':
-			return <Box sx={{ p: 3, pt: { xs: 10, sm: 9 }, mt: { xs: 2, sm: 1 } }}><ServiceView /></Box>
+			return <Box sx={{ width: '100%', p: 2, pt: { xs: 2, sm: 2 }, mt: 0 }}><ServiceView /></Box>
 		default:
 			return null
 	}
