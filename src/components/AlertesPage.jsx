@@ -36,14 +36,18 @@ export function AlertesPage() {
             })
 
             const data = await res.json()
-            if (res.ok && Array.isArray(data)) {
+            console.log('Alerts data:', data)
+            
+            if (res.ok) {
+                // Les données retournées sont directement un array de buckets
+                const bucketsArray = Array.isArray(data) ? data : (data?.buckets ? data.buckets : [])
+                
                 // Convertir en alertes
-                const alertsData = data.map((item, idx) => ({
+                const alertsData = bucketsArray.map((item, idx) => ({
                     id: idx + 1,
                     ip: item.key,
-                    totalBytes: item.doc_count || item.count || 0,
-                    totalMB: ((item.doc_count || item.count || 0) * 1024) / (1024 * 1024), // estimation
-                    severity: (item.doc_count || item.count || 0) > 10000 ? 'high' : 'medium',
+                    totalCount: item.doc_count || 0,
+                    severity: (item.doc_count || 0) > 1000 ? 'high' : (item.doc_count || 0) > 500 ? 'medium' : 'low',
                     timestamp: new Date().toISOString()
                 }))
                 setAlerts(alertsData)
@@ -72,12 +76,16 @@ export function AlertesPage() {
             })
 
             const data = await res.json()
-            if (res.ok && Array.isArray(data)) {
-                const consumers = data.map((item, idx) => ({
+            console.log('Top consumers data:', data)
+            
+            if (res.ok) {
+                // Les données retournées sont directement un array de buckets
+                const bucketsArray = Array.isArray(data) ? data : (data?.buckets ? data.buckets : [])
+                
+                const consumers = bucketsArray.map((item, idx) => ({
                     id: idx + 1,
                     ip: item.key,
-                    bytes: item.doc_count || item.count || 0,
-                    mb: ((item.doc_count || item.count || 0) * 1024) / (1024 * 1024)
+                    count: item.doc_count || 0
                 }))
                 setTopConsumers(consumers)
             }
@@ -219,7 +227,7 @@ export function AlertesPage() {
                                                     {alert.ip}
                                                 </TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 600 }}>
-                                                    {alert.totalMB.toFixed(2)}
+                                                    {alert.totalCount}
                                                 </TableCell>
                                                 <TableCell align="center">
                                                     <Chip
