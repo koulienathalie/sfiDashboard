@@ -76,14 +76,14 @@ async function testData() {
                         total_bytes: { sum: { field: 'network.bytes' } },
                         avg_bytes: { avg: { field: 'network.bytes' } },
                         top_sources_by_bytes: {
-                            terms: { field: 'source.ip', size: 10 },
+                            terms: { field: 'source.ip', size: 20 },
                             aggs: { bytes: { sum: { field: 'network.bytes' } } }
                         },
                         bandwidth_over_time: {
                             date_histogram: { field: '@timestamp', fixed_interval: '1m' },
                             aggs: { bytes: { sum: { field: 'network.bytes' } } }
                         },
-                        by_protocol: { terms: { field: 'network.protocol', size: 10 }, aggs: { bytes: { sum: { field: 'network.bytes' } } } }
+                        by_protocol: { terms: { field: 'network.protocol', size: 20 }, aggs: { bytes: { sum: { field: 'network.bytes' } } } }
                     }
                 }
             });
