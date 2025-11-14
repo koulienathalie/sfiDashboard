@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Card, CardHeader, CardContent, TextField, Button, CircularProgress, Snackbar, Alert, Stack } from '@mui/material'
+import UserManagement from './UserManagement'
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false)
@@ -59,6 +60,10 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Box sx={{ mt: 3 }}>
+        <UserManagement />
+      </Box>
 
       <Snackbar open={!!notice} autoHideDuration={6000} onClose={() => setNotice(null)}>
         {notice ? <Alert onClose={() => setNotice(null)} severity={notice.severity} sx={{ width: '100%' }}>{notice.message}</Alert> : null}
