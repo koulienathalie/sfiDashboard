@@ -100,13 +100,13 @@ export function AlertesPage() {
         loadTopConsumers()
 
         const wsUrl = import.meta.env.VITE_BACKEND_WS_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001'
-        console.log('[AlertesPage] Connecting to:', wsUrl)
+        console.log('[AlertesPage] Tentative de connexion WebSocket:', wsUrl)
         const socket = io(wsUrl, {
             reconnection: true,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
             reconnectionAttempts: 5,
-            transports: ['websocket']
+            transports: ['websocket', 'polling']
         })
 
         socketRef.current = socket

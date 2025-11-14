@@ -137,8 +137,14 @@ function BandwidthView() {
         fetchProtocols()
 
         const socketUrl = import.meta.env.VITE_BACKEND_WS_URL || import.meta.env.VITE_API_URL || 'http://localhost:3001'
-        console.log('[BandwidthView] Connecting to:', socketUrl)
-        const socket = io(socketUrl, { transports: ['websocket'] })
+        console.log('[BandwidthView] Tentative de connexion WebSocket:', socketUrl)
+        const socket = io(socketUrl, {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: 5
+        })
         socketRef.current = socket
 
         socket.on('connect', () => {
