@@ -24,7 +24,7 @@ import {
   MenuItem,
   Divider
 } from '@mui/material'
-import { Search as SearchIcon, DownloadForExcel as DownloadIcon, FilterList as FilterIcon } from 'lucide-react'
+import { Search as SearchIcon, Download as DownloadIcon, FilterList as FilterIconMUI } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
@@ -311,7 +311,7 @@ export default function ExplorationPage() {
           </Button>
           <Button
             variant="contained"
-            startIcon={<SearchIcon size={18} />}
+            startIcon={<SearchIcon />}
             onClick={handleSearch}
             disabled={loading}
             sx={{
@@ -504,7 +504,7 @@ export default function ExplorationPage() {
 
       {!loading && results.length === 0 && totalResults === 0 && (
         <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)' }}>
-          <FilterIcon size={48} style={{ opacity: 0.5, marginBottom: '16px' }} />
+          <FilterIconMUI sx={{ fontSize: 48, opacity: 0.5, display: 'block', margin: '0 auto 16px' }} />
           <Typography color="textSecondary">
             Aucun résultat. Modifiez vos filtres et relancez la recherche.
           </Typography>
