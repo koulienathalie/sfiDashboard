@@ -266,12 +266,13 @@ export function IpView() {
             </Typography>
 
             <Grid container spacing={3} sx={{ width: '100%' }}>
-                {/* Source IPs - Half width on md and up, full on mobile */}
-                <Grid item xs={12} md={6} lg={6}>
+                {/* Source IPs - 58% width on md, 67% on lg, full on mobile */}
+                <Grid item xs={12} md={7} lg={8}>
                     <Card 
                         variant="outlined" 
                         sx={{ 
                             height: '100%',
+                            minHeight: '450px',
                             borderRadius: 3,
                             border: '1px solid',
                             borderColor: 'divider',
@@ -331,12 +332,13 @@ export function IpView() {
                     </Card>
                 </Grid>
 
-                {/* Destination IPs - Half width on md and up, full on mobile */}
-                <Grid item xs={12} md={6} lg={6}>
+                {/* Destination IPs - 58% width on md, 67% on lg, full on mobile */}
+                <Grid item xs={12} md={7} lg={8}>
                     <Card 
                         variant="outlined"
                         sx={{ 
                             height: '100%',
+                            minHeight: '450px',
                             borderRadius: 3,
                             border: '1px solid',
                             borderColor: 'divider',
@@ -412,6 +414,7 @@ export function IpView() {
                         variant="outlined"
                         sx={{ 
                             height: '100%',
+                            minHeight: '400px',
                             borderRadius: 3,
                             border: '1px solid',
                             borderColor: selectedIP ? alpha('#E05B5B', 0.3) : 'divider',
