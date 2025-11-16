@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import {
-  Container,
   Paper,
   TextField,
   Button,
@@ -152,7 +151,16 @@ export default function ExplorationPage() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: isDark ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.95)',
+        p: { xs: 2, sm: 3, md: 4 },
+        pt: { xs: 10, sm: 9, md: 8 },
+        mt: { xs: 2, sm: 1 },
+      }}
+    >
+      <Box sx={{ maxWidth: '1400px', mx: 'auto' }}>
       {/* En-tête */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
@@ -510,6 +518,7 @@ export default function ExplorationPage() {
           </Typography>
         </Paper>
       )}
-    </Container>
+      </Box>
+    </Box>
   )
 }
