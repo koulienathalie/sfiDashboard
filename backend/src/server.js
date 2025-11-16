@@ -25,8 +25,27 @@ const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
 const server = http.createServer(app);
 
-const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ['http://localhost:3000', 'http://localhost:5173'];
-const io = new Server(server, { cors: { origin: allowedOrigins, methods: ['GET', 'POST'] } });
+// Parse FRONTEND_URL(s) - Support multiple URLs separated by spaces
+const parseAllowedOrigins = () => {
+  if (!process.env.FRONTEND_URL) {
+    return ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'];
+  }
+  const urls = process.env.FRONTEND_URL.split(/\s+/).filter(url => url.trim());
+  // Always include localhost fallbacks
+  const defaultUrls = ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'];
+  return [...new Set([...urls, ...defaultUrls])]; // Remove duplicates
+};
+
+const allowedOrigins = parseAllowedOrigins();
+console.log('✅ Allowed Origins for CORS:', allowedOrigins.join(', '));
+
+const io = new Server(server, { 
+  cors: { 
+    origin: allowedOrigins, 
+    methods: ['GET', 'POST'],
+    credentials: true
+  } 
+});
 
 // WebSocket handling
 io.on('connection', (socket) => {

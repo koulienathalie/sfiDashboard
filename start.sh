@@ -2,8 +2,9 @@
 
 # ============================================
 # sfiDashMonitoring - Script de démarrage
-# Démarre le backend et le frontend, collecte logs
-# ============================================
+# Démarre le backend et le frontend
+# Mode LOCAL: Tous les services accessibles sur localhost
+# =============================================
 
 set -euo pipefail
 
@@ -35,108 +36,154 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
+echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
+echo -e "${BLUE}║  SFI Dashboard Monitoring - Démarrage LOCAL            ║${NC}"
+echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}\n"
+
 echo -e "${BLUE}🔍 Vérifications préalables...${NC}\n"
 
+# Check Node.js
 if ! command -v node &>/dev/null; then
   echo -e "${RED}❌ Node.js n'est pas installé${NC}"
   exit 1
 fi
 echo -e "${GREEN}  ✓ Node.js: $(node --version)${NC}"
 
+# Check npm
 if ! command -v npm &>/dev/null; then
   echo -e "${RED}❌ npm n'est pas installé${NC}"
   exit 1
 fi
 echo -e "${GREEN}  ✓ npm: $(npm --version)${NC}"
 
+# Check backend directory
 if [ ! -d "backend" ]; then
   echo -e "${RED}❌ Dossier 'backend' introuvable${NC}"
   exit 1
 fi
 echo -e "${GREEN}  ✓ Dossier backend trouvé${NC}"
 
-FRONTEND_DIR=""
-if [ -d "frontend" ]; then
-  FRONTEND_DIR="frontend"
-  echo -e "${GREEN}  ✓ Dossier frontend trouvé: ./frontend${NC}"
-elif [ -f "index.html" ] && [ -d "src" ]; then
-  FRONTEND_DIR="."
-  echo -e "${GREEN}  ✓ Frontend détecté à la racine du projet${NC}"
-else
-  echo -e "${RED}❌ Dossier 'frontend' introuvable et aucun frontend en racine détecté (index.html + src/)${NC}"
+# Check frontend
+if [ ! -f "package.json" ] || [ ! -d "src" ]; then
+  echo -e "${RED}❌ Frontend non détecté (package.json ou src/ manquant)${NC}"
   exit 1
 fi
+echo -e "${GREEN}  ✓ Frontend trouvé${NC}\n"
 
-# Install dependencies if missing
+# Install backend dependencies if missing
 if [ ! -d "backend/node_modules" ]; then
   echo -e "${YELLOW}  ⚠ Dépendances backend manquantes${NC}"
-  echo -e "${BLUE}  📦 Installation en cours (backend)...${NC}"
+  echo -e "${BLUE}  📦 Installation en cours...${NC}"
   (cd backend && npm install)
 fi
 echo -e "${GREEN}  ✓ Dépendances backend OK${NC}"
 
-if [ ! -d "$FRONTEND_DIR/node_modules" ]; then
-  echo -e "${YELLOW}  ⚠ Dépendances frontend manquantes (${FRONTEND_DIR})${NC}"
-  echo -e "${BLUE}  📦 Installation en cours (frontend)...${NC}"
-  (cd "$FRONTEND_DIR" && npm install)
+# Install frontend dependencies if missing
+if [ ! -d "node_modules" ]; then
+  echo -e "${YELLOW}  ⚠ Dépendances frontend manquantes${NC}"
+  echo -e "${BLUE}  📦 Installation en cours...${NC}"
+  npm install
 fi
-echo -e "${GREEN}  ✓ Dépendances frontend OK (${FRONTEND_DIR})${NC}\n"
+echo -e "${GREEN}  ✓ Dépendances frontend OK${NC}\n"
 
-# Check .env
-if [ ! -f "backend/.env" ]; then
-  echo -e "${YELLOW}  ⚠ Fichier backend/.env manquant${NC}"
-  echo -e "${YELLOW}  📝 Copiez backend/envDefault vers backend/.env et adaptez les valeurs${NC}\n"
-fi
-
-echo -e "${BLUE}📡 Démarrage du backend...${NC}"
-cd backend
-# Allow overriding host/domain via env or args
-FRONTEND_DOMAIN=${FRONTEND_DOMAIN:-${1:-sfimonitoring.com}}
-FRONTEND_PORT=${FRONTEND_PORT:-5173}
+# Ports configuration
 BACKEND_PORT=${BACKEND_PORT:-3001}
-NODE_ENV=${NODE_ENV:-production}
+FRONTEND_PORT=${FRONTEND_PORT:-5173}
 
-export FRONTEND_URL="http://${FRONTEND_DOMAIN}:${FRONTEND_PORT}"
+echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}📍 Configuration${NC}"
+echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
+echo -e "  Backend:   http://localhost:${BACKEND_PORT}"
+echo -e "  Frontend:  http://localhost:${FRONTEND_PORT}"
+echo -e "  WebSocket: ws://localhost:${BACKEND_PORT}/socket.io"
+echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}\n"
 
-echo -e "${BLUE}  → FRONTEND_URL set to: ${FRONTEND_URL}${NC}"
+# ============================================
+# Démarrage du Backend
+# ============================================
+echo -e "${BLUE}� Démarrage du Backend...${NC}"
+cd backend
 
-# Start backend (binds to HOST env if set by server)
-HOST=${HOST:-0.0.0.0}
-export HOST
-echo -e "${BLUE}  → Starting backend on ${HOST}:${BACKEND_PORT} (NODE_ENV=${NODE_ENV})...${NC}"
-FRONTEND_URL=$FRONTEND_URL NODE_ENV=$NODE_ENV PORT=$BACKEND_PORT HOST=$HOST nohup node server.js > ../logs/backend.log 2>&1 &
+# Configuration backend pour localhost uniquement
+export HOST=0.0.0.0
+export PORT=$BACKEND_PORT
+export FRONTEND_URL="http://localhost:${FRONTEND_PORT} http://127.0.0.1:${FRONTEND_PORT}"
+export NODE_ENV=${NODE_ENV:-development}
+
+# Affiche la configuration
+echo -e "${CYAN}  Configuration:${NC}"
+echo -e "    HOST: $HOST"
+echo -e "    PORT: $PORT"
+echo -e "    FRONTEND_URL: $FRONTEND_URL"
+echo -e "    NODE_ENV: $NODE_ENV"
+
+# Start backend with logging
+npm start > "$SCRIPT_DIR/logs/backend.log" 2>&1 &
 BACKEND_PID=$!
+
 cd "$SCRIPT_DIR"
 
-sleep 2
+# Wait for backend to start
+echo -e "${YELLOW}  ⏳ Attente du démarrage du backend...${NC}"
+sleep 3
+
+# Verify backend started
 if ! kill -0 $BACKEND_PID 2>/dev/null; then
   echo -e "${RED}❌ Le backend n'a pas démarré correctement${NC}"
-  echo -e "${YELLOW}Consultez les logs: tail -f logs/backend.log${NC}"
+  echo -e "${YELLOW}  Logs: logs/backend.log${NC}"
+  cat logs/backend.log
   exit 1
 fi
 echo -e "${GREEN}  ✓ Backend démarré (PID: $BACKEND_PID)${NC}\n"
 
-echo -e "${BLUE}🌐 Démarrage du frontend (${FRONTEND_DIR})...${NC}"
-cd "$FRONTEND_DIR"
-# Redirect frontend logs to root logs directory
-# Expose frontend to network (--host 0.0.0.0) and set VITE API URL for client
-FRONTEND_API_URL=${FRONTEND_API_URL:-"http://${FRONTEND_DOMAIN}:${BACKEND_PORT}"}
-echo -e "${BLUE}  → Starting frontend dev server on 0.0.0.0:${FRONTEND_PORT} (API=${FRONTEND_API_URL})${NC}"
-VITE_API_URL=$FRONTEND_API_URL nohup npm run dev -- --host 0.0.0.0 --port $FRONTEND_PORT > "$SCRIPT_DIR/logs/frontend.log" 2>&1 &
-FRONTEND_PID=$!
-cd "$SCRIPT_DIR"
+# ============================================
+# Démarrage du Frontend
+# ============================================
+echo -e "${BLUE}🌐 Démarrage du Frontend...${NC}"
 
-sleep 2
+# Frontend configuration
+export VITE_API_URL="http://localhost:${BACKEND_PORT}"
+export VITE_BACKEND_WS_URL="ws://localhost:${BACKEND_PORT}"
+
+echo -e "${CYAN}  Configuration:${NC}"
+echo -e "    VITE_API_URL: $VITE_API_URL"
+echo -e "    VITE_BACKEND_WS_URL: $VITE_BACKEND_WS_URL"
+
+# Start frontend with logging (not using nohup, directly in background)
+npm run dev -- --port $FRONTEND_PORT > "logs/frontend.log" 2>&1 &
+FRONTEND_PID=$!
+
+# Wait for frontend to start
+echo -e "${YELLOW}  ⏳ Attente du démarrage du frontend...${NC}"
+sleep 3
+
+# Verify frontend started
 if ! kill -0 $FRONTEND_PID 2>/dev/null; then
   echo -e "${RED}❌ Le frontend n'a pas démarré correctement${NC}"
-  echo -e "${YELLOW}Consultez les logs: tail -f logs/frontend.log${NC}"
+  echo -e "${YELLOW}  Logs: logs/frontend.log${NC}"
+  cat logs/frontend.log
   kill $BACKEND_PID 2>/dev/null || true
   exit 1
 fi
 echo -e "${GREEN}  ✓ Frontend démarré (PID: $FRONTEND_PID)${NC}\n"
 
-echo -e "${GREEN}  Services démarrés avec succès. Logs: logs/backend.log, logs/frontend.log${NC}\n"
+# ============================================
+# Services running
+# ============================================
+echo -e "${GREEN}╔════════════════════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║  ✅ Services démarrés avec succès                       ║${NC}"
+echo -e "${GREEN}╠════════════════════════════════════════════════════════╣${NC}"
+echo -e "${GREEN}║  🌐 Frontend:  http://localhost:${FRONTEND_PORT}${NC}"
+echo -e "${GREEN}║  📡 Backend:   http://localhost:${BACKEND_PORT}${NC}"
+echo -e "${GREEN}║  🔌 WebSocket: ws://localhost:${BACKEND_PORT}/socket.io${NC}"
+echo -e "${GREEN}╚════════════════════════════════════════════════════════╝${NC}\n"
 
-echo -e "${CYAN}📊 Monitoring actif... Appuyez sur Ctrl+C pour arrêter${NC}\n"
+echo -e "${CYAN}📊 Monitoring actif - Appuyez sur Ctrl+C pour arrêter${NC}\n"
 
+echo -e "${YELLOW}📋 Logs:${NC}"
+echo -e "  Backend:  tail -f logs/backend.log"
+echo -e "  Frontend: tail -f logs/frontend.log"
+echo -e "  All:      tail -f logs/*.log\n"
+
+# Wait for both processes
 wait
