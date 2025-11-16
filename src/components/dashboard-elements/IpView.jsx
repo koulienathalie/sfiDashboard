@@ -261,13 +261,9 @@ export function IpView() {
 
     return (
         <Box sx={{ width: '100%' }}>
-            <Typography variant="h4" fontWeight={700} sx={{ mb: 3, color: '#1a1a2e' }}>
-                Surveillance réseau
-            </Typography>
-
             <Grid container spacing={3} sx={{ width: '100%' }}>
-                {/* Source IPs - 58% width on md, 67% on lg, full on mobile */}
-                <Grid item xs={12} md={7} lg={8}>
+                {/* Source IPs - Full width */}
+                <Grid item xs={12}>
                     <Card 
                         variant="outlined" 
                         sx={{ 
@@ -332,8 +328,8 @@ export function IpView() {
                     </Card>
                 </Grid>
 
-                {/* Destination IPs - 58% width on md, 67% on lg, full on mobile */}
-                <Grid item xs={12} md={7} lg={8}>
+                {/* Destination IPs - Full width */}
+                <Grid item xs={12}>
                     <Card 
                         variant="outlined"
                         sx={{ 
