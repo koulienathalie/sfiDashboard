@@ -20,6 +20,7 @@ import {
   Select,
   Typography,
   IconButton,
+  Paper,
 } from '@mui/material'
 import FileUploadIcon from '@mui/icons-material/FileUpload'
 import DownloadIcon from '@mui/icons-material/Download'
@@ -128,8 +129,28 @@ export default function SettingsPage() {
 
   return (
     <Box sx={{ p: 2, pt: { xs: 10, sm: 9 }, mt: { xs: 2, sm: 1 } }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          mb: 3,
+          background: 'linear-gradient(135deg, #02647E 0%, #72BDD1 100%)',
+          borderRadius: 2,
+          color: 'white',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+              Paramètres
+            </Typography>
+            <Typography sx={{ opacity: 0.9 }}>
+              Configuration de l'application et options avancées
+            </Typography>
+          </Box>
+        </Box>
+      </Paper>
       <Card>
-        <CardHeader title="Paramètres" subheader="Configuration de l'application et options avancées" />
         <CardContent>
           {loading ? (
             <CircularProgress />
