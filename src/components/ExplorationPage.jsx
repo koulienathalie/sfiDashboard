@@ -180,20 +180,20 @@ export default function ExplorationPage() {
     <Box
       sx={{
         minHeight: '100vh',
-        background: isDark ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.95)',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)',
         p: { xs: 2, sm: 3, md: 4 },
         pt: { xs: 10, sm: 9, md: 8 },
         mt: { xs: 2, sm: 1 },
       }}
     >
-      <Box sx={{ maxWidth: '1400px', mx: 'auto' }}>
+      <Box sx={{ maxWidth: '1800px', mx: 'auto' }}>
       {/* En-tête */}
       <Paper
         elevation={0}
         sx={{
           p: 3,
-          mb: 4,
-          background: 'linear-gradient(135deg, #1976D2 0%, #1565C0 100%)',
+          mb: 3,
+          background: 'linear-gradient(135deg, #02647E 0%, #72BDD1 100%)',
           borderRadius: 2,
           color: 'white',
         }}
@@ -235,11 +235,11 @@ export default function ExplorationPage() {
 
       {searchMode === 'advanced' && (
       <Paper
+        elevation={2}
         sx={{
           p: 3,
           mb: 3,
-          backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
-          border: `1px solid ${theme.palette.divider}`
+          borderRadius: 2
         }}
       >
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
@@ -399,11 +399,11 @@ export default function ExplorationPage() {
 
       {searchMode === 'iprange' && (
       <Paper
+        elevation={2}
         sx={{
           p: 3,
           mb: 3,
-          backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
-          border: `1px solid ${theme.palette.divider}`
+          borderRadius: 2
         }}
       >
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
@@ -500,57 +500,49 @@ export default function ExplorationPage() {
 
       {/* Statistiques */}
       {results.length > 0 && (
-        <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.02)' }}>
-              <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  Total de paquets
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+            <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+              <Typography color="textSecondary" gutterBottom>
+                Total de paquets
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
                   {stats.packetCount}
                 </Typography>
-              </CardContent>
-            </Card>
+            </Paper>
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.02)' }}>
-              <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  Total de données
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                  {formatBytes(stats.totalBytes)}
-                </Typography>
-              </CardContent>
-            </Card>
+            <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+              <Typography color="textSecondary" gutterBottom>
+                Total de données
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                {formatBytes(stats.totalBytes)}
+              </Typography>
+            </Paper>
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.02)' }}>
-              <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  Moy. par paquet
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                  {formatBytes(stats.avgBytes)}
-                </Typography>
-              </CardContent>
-            </Card>
+            <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+              <Typography color="textSecondary" gutterBottom>
+                Moy. par paquet
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                {formatBytes(stats.avgBytes)}
+              </Typography>
+            </Paper>
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.02)' }}>
-              <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  Services uniques
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                  {stats.uniqueServices}
-                </Typography>
-              </CardContent>
-            </Card>
+            <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+              <Typography color="textSecondary" gutterBottom>
+                Services uniques
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                {stats.uniqueServices}
+              </Typography>
+            </Paper>
           </Grid>
         </Grid>
       )}
@@ -563,9 +555,9 @@ export default function ExplorationPage() {
       )}
 
       {!loading && results.length > 0 && (
-        <Paper sx={{ backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)' }}>
-          <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-            <Typography variant="subtitle2">
+        <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Box sx={{ p: 3, borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: 'rgba(0, 0, 0, 0.02)' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
               {totalResults} résultats trouvés (affichage {pagination.from + 1}-{Math.min(pagination.from + pagination.size, totalResults)})
             </Typography>
           </Box>
@@ -668,7 +660,7 @@ export default function ExplorationPage() {
       )}
 
       {!loading && results.length === 0 && totalResults === 0 && (
-        <Paper sx={{ p: 4, textAlign: 'center', backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)' }}>
+        <Paper elevation={2} sx={{ p: 4, textAlign: 'center', borderRadius: 2 }}>
           <FilterIconMUI sx={{ fontSize: 48, opacity: 0.5, display: 'block', margin: '0 auto 16px' }} />
           <Typography color="textSecondary">
             Aucun résultat. Modifiez vos filtres et relancez la recherche.
