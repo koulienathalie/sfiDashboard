@@ -25,6 +25,7 @@ import {
 } from '@mui/material'
 import { Search as SearchIcon, Download as DownloadIcon, FilterList as FilterIconMUI, Explore as ExploreIcon } from '@mui/icons-material'
 import { useTheme } from '@mui/material/styles'
+import { PieChart, BarChart } from '@mui/x-charts'
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
@@ -175,6 +176,33 @@ export default function ExplorationPage() {
   const formatDate = (timestamp) => {
     return new Date(timestamp).toLocaleString('fr-FR')
   }
+
+  // Générer les données pour les graphiques
+  const getChartData = () => {
+    const protocolCounts = {}
+    const serviceCounts = {}
+    const topServices = {}
+
+    results.forEach(row => {
+      const protocol = row['network.protocol']?.toUpperCase() || 'UNKNOWN'
+      const service = row['network.application'] || 'Unknown'
+      const bytes = row['network.bytes'] || 0
+
+      protocolCounts[protocol] = (protocolCounts[protocol] || 0) + 1
+      serviceCounts[service] = (serviceCounts[service] || 0) + 1
+      topServices[service] = (topServices[service] || 0) + bytes
+    })
+
+    return {
+      protocolData: Object.entries(protocolCounts).map(([name, value]) => ({ name, value })),
+      serviceData: Object.entries(topServices)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 8)
+        .map(([name, value]) => ({ name, bytes: Math.round(value / 1024 / 1024) }))
+    }
+  }
+
+  const chartData = getChartData()
 
   return (
     <Box
@@ -544,6 +572,57 @@ export default function ExplorationPage() {
               </Typography>
             </Paper>
           </Grid>
+        </Grid>
+      )}
+
+      {/* Graphiques analytiques */}
+      {!loading && results.length > 0 && chartData.protocolData.length > 0 && (
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {/* Pie Chart - Protocoles */}
+          <Grid item xs={12} md={6}>
+            <Paper elevation={2} sx={{ borderRadius: 2, p: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                📊 Distribution des Protocoles
+              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', height: 300 }}>
+                <PieChart
+                  series={[{
+                    data: chartData.protocolData.map((d, idx) => ({
+                      id: idx,
+                      value: d.value,
+                      label: d.name
+                    }))
+                  }]}
+                  width={350}
+                  height={300}
+                  colors={['#2196F3', '#FF9800', '#4CAF50', '#F44336', '#9C27B0', '#00BCD4']}
+                  margin={{ top: 20, bottom: 20, left: 0, right: 0 }}
+                />
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Bar Chart - Services */}
+          {chartData.serviceData.length > 0 && (
+            <Grid item xs={12} md={6}>
+              <Paper elevation={2} sx={{ borderRadius: 2, p: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                  📈 Top Services (Mo)
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'center', height: 300 }}>
+                  <BarChart
+                    dataset={chartData.serviceData}
+                    xAxis={[{ scaleType: 'band', dataKey: 'name' }]}
+                    series={[{ dataKey: 'bytes', label: 'MB', color: '#02647E' }]}
+                    width={350}
+                    height={300}
+                    margin={{ top: 20, bottom: 40, left: 50, right: 20 }}
+                    sx={{ '& text': { fontSize: '0.75rem' } }}
+                  />
+                </Box>
+              </Paper>
+            </Grid>
+          )}
         </Grid>
       )}
 
