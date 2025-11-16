@@ -3,10 +3,68 @@ import { FlowView } from './FlowView'
 import { IpView } from './IpView'
 import { ServiceView } from './ServiceView'
 import BandwidthView from './BandwidthView'
-import { Grid, Paper, Box } from '@mui/material'
+import { Grid, Paper, Box, Typography } from '@mui/material'
 import SocketStatus from '../SocketStatus'
+import { TrendingUp, Cloud, Lan, Settings } from '@mui/icons-material'
 
 export function DataMainView({ page }) {
+	// Configurations des pages individuelles
+	const pageConfig = {
+		ipsource: {
+			title: 'IPs Consommatrices',
+			subtitle: 'Analyse des adresses IP source et consommation réseau',
+			icon: Lan,
+			color: '#02647E'
+		},
+		flow: {
+			title: 'Flux Réseau',
+			subtitle: 'Visualisation des flux de données réseau en temps réel',
+			icon: Cloud,
+			color: '#02647E'
+		},
+		bandwidth: {
+			title: 'Bande Passante',
+			subtitle: 'Monitoring de la bande passante réseau',
+			icon: TrendingUp,
+			color: '#02647E'
+		},
+		service: {
+			title: 'Services',
+			subtitle: 'Analyse des services réseau et applications',
+			icon: Settings,
+			color: '#02647E'
+		}
+	}
+
+	// Créer l'en-tête pour les pages individuelles
+	const renderFullPageHeader = (config) => {
+		const IconComponent = config.icon
+		return (
+			<Paper
+				elevation={0}
+				sx={{
+					p: 3,
+					mb: 3,
+					background: `linear-gradient(135deg, ${config.color} 0%, #72BDD1 100%)`,
+					borderRadius: 2,
+					color: 'white',
+				}}
+			>
+				<Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+					<IconComponent sx={{ fontSize: 40 }} />
+					<Box>
+						<Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+							{config.title}
+						</Typography>
+						<Typography sx={{ opacity: 0.9 }}>
+							{config.subtitle}
+						</Typography>
+					</Box>
+				</Box>
+			</Paper>
+		)
+	}
+
 	// Main dashboard: when page is 'view' or undefined, show a composed dashboard
 	if (!page || page === 'view') {
 		return (
@@ -46,13 +104,33 @@ export function DataMainView({ page }) {
 
 	switch (page) {
 		case 'ipsource':
-			return <Box sx={{ width: '100%', p: 2, pt: { xs: 2, sm: 2 }, mt: 0 }}><IpView /></Box>
+			return (
+				<Box>
+					{renderFullPageHeader(pageConfig.ipsource)}
+					<Box sx={{ width: '100%', p: 2, pt: 0, mt: 0 }}><IpView /></Box>
+				</Box>
+			)
 		case 'flow':
-			return <Box sx={{ width: '100%', p: 0, pt: 0, mt: 0 }}><FlowView /></Box>
+			return (
+				<Box>
+					{renderFullPageHeader(pageConfig.flow)}
+					<Box sx={{ width: '100%', p: 0, pt: 0, mt: 0 }}><FlowView /></Box>
+				</Box>
+			)
 		case 'bandwidth':
-			return <Box sx={{ width: '100%', p: 2, pt: { xs: 2, sm: 2 }, mt: 0 }}><BandwidthView /></Box>
+			return (
+				<Box>
+					{renderFullPageHeader(pageConfig.bandwidth)}
+					<Box sx={{ width: '100%', p: 2, pt: 0, mt: 0 }}><BandwidthView /></Box>
+				</Box>
+			)
 		case 'service':
-			return <Box sx={{ width: '100%', p: 2, pt: { xs: 2, sm: 2 }, mt: 0 }}><ServiceView /></Box>
+			return (
+				<Box>
+					{renderFullPageHeader(pageConfig.service)}
+					<Box sx={{ width: '100%', p: 2, pt: 0, mt: 0 }}><ServiceView /></Box>
+				</Box>
+			)
 		default:
 			return null
 	}
