@@ -14,25 +14,29 @@ export function DataMainView({ page }) {
 			title: 'IPs Consommatrices',
 			subtitle: 'Analyse des adresses IP source et consommation réseau',
 			icon: Lan,
-			color: '#02647E'
+			color: '#02647E',
+			component: IpView
 		},
 		flow: {
 			title: 'Flux Réseau',
 			subtitle: 'Visualisation des flux de données réseau en temps réel',
 			icon: Cloud,
-			color: '#02647E'
+			color: '#02647E',
+			component: FlowView
 		},
 		bandwidth: {
 			title: 'Bande Passante',
 			subtitle: 'Monitoring de la bande passante réseau',
 			icon: TrendingUp,
-			color: '#02647E'
+			color: '#02647E',
+			component: BandwidthView
 		},
 		service: {
 			title: 'Services',
 			subtitle: 'Analyse des services réseau et applications',
 			icon: Settings,
-			color: '#02647E'
+			color: '#02647E',
+			component: ServiceView
 		}
 	}
 
@@ -102,37 +106,22 @@ export function DataMainView({ page }) {
 		)
 	}
 
-	switch (page) {
-		case 'ipsource':
-			return (
-				<Box>
-					{renderFullPageHeader(pageConfig.ipsource)}
-					<Box sx={{ width: '100%', p: 2, pt: 0, mt: 0 }}><IpView /></Box>
+	// Pages individuelles fullscreen
+	if (page && pageConfig[page]) {
+		const config = pageConfig[page]
+		const Component = config.component
+		const padding = page === 'flow' ? 0 : 2
+
+		return (
+			<Box sx={{ width: '100%' }}>
+				{renderFullPageHeader(config)}
+				<Box sx={{ width: '100%', p: padding, pt: 0, mt: 0 }}>
+					<Component />
 				</Box>
-			)
-		case 'flow':
-			return (
-				<Box>
-					{renderFullPageHeader(pageConfig.flow)}
-					<Box sx={{ width: '100%', p: 0, pt: 0, mt: 0 }}><FlowView /></Box>
-				</Box>
-			)
-		case 'bandwidth':
-			return (
-				<Box>
-					{renderFullPageHeader(pageConfig.bandwidth)}
-					<Box sx={{ width: '100%', p: 2, pt: 0, mt: 0 }}><BandwidthView /></Box>
-				</Box>
-			)
-		case 'service':
-			return (
-				<Box>
-					{renderFullPageHeader(pageConfig.service)}
-					<Box sx={{ width: '100%', p: 2, pt: 0, mt: 0 }}><ServiceView /></Box>
-				</Box>
-			)
-		default:
-			return null
+			</Box>
+		)
 	}
+
+	return null
 }
 
