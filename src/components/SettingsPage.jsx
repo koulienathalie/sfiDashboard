@@ -128,7 +128,15 @@ export default function SettingsPage() {
   const logLevels = useMemo(() => ['debug', 'info', 'warn', 'error'], [])
 
   return (
-    <Box sx={{ p: 2, pt: { xs: 10, sm: 9 }, mt: { xs: 2, sm: 1 } }}>
+    <Box sx={{ 
+      width: '100%', 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)',
+      p: { xs: 2, sm: 3, md: 4 },
+      pt: { xs: 10, sm: 9, md: 8 }, 
+      mt: { xs: 2, sm: 1 } 
+    }}>
+      <Box sx={{ maxWidth: '1800px', mx: 'auto' }}>
       <Paper
         elevation={0}
         sx={{
@@ -279,6 +287,7 @@ export default function SettingsPage() {
       <Snackbar open={!!notice} autoHideDuration={6000} onClose={() => setNotice(null)}>
         {notice ? <Alert onClose={() => setNotice(null)} severity={notice.severity} sx={{ width: '100%' }}>{notice.message}</Alert> : null}
       </Snackbar>
+      </Box>
     </Box>
   )
 }

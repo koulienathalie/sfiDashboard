@@ -162,7 +162,15 @@ export function AlertesPage() {
     }
 
     return (
-        <Box sx={{ width: '100%', p: 3, pt: { xs: 10, sm: 9 }, mt: { xs: 2, sm: 1 } }}>
+        <Box sx={{ 
+          width: '100%', 
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)',
+          p: { xs: 2, sm: 3, md: 4 },
+          pt: { xs: 10, sm: 9, md: 8 }, 
+          mt: { xs: 2, sm: 1 } 
+        }}>
+            <Box sx={{ maxWidth: '1800px', mx: 'auto' }}>
             {/* Header */}
             <Paper
               elevation={0}
@@ -382,6 +390,7 @@ export function AlertesPage() {
                     to { transform: rotate(360deg); }
                 }
             `}</style>
+            </Box>
         </Box>
     )
 }
