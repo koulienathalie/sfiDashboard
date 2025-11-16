@@ -14,7 +14,7 @@ export default function UserManagement() {
   async function loadUsers() {
     setLoading(true)
     try {
-      const token = localStorage.getItem('auth:accessToken')
+      const token = localStorage.getItem('accessToken')
       const headers = { 'Content-Type': 'application/json' }
       if (token) headers['Authorization'] = `Bearer ${token}`
       
@@ -39,7 +39,7 @@ export default function UserManagement() {
   async function deleteUser(id) {
     if (!confirm('Confirmer la suppression de cet utilisateur ?')) return
     try {
-      const token = localStorage.getItem('auth:accessToken')
+      const token = localStorage.getItem('accessToken')
       const headers = { 'Content-Type': 'application/json' }
       if (token) headers['Authorization'] = `Bearer ${token}`
       

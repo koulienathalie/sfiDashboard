@@ -75,7 +75,12 @@ export default function ProfilePage() {
     try {
       const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/auth/signout'
       await fetch(apiUrl, { method: 'POST' })
-      window.location.href = '/login'
+      // Effacer les données stockées (matcher AuthContext)
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('auth:user')
+      // Redirection vers la page de connexion
+      window.location.href = '/auth/login'
     } catch (err) {
       setNotice({ severity: 'error', message: 'Impossible de se déconnecter' })
     }

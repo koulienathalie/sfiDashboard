@@ -17,7 +17,7 @@ export function useApiWithNotifications() {
     } = notificationConfig
 
     try {
-      const token = localStorage.getItem('auth:accessToken')
+      const token = localStorage.getItem('accessToken')
       const headers = options.headers || {}
       
       if (token) {
