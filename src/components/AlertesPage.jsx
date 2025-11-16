@@ -169,7 +169,7 @@ export function AlertesPage() {
               sx={{
                 p: 3,
                 mb: 3,
-                background: 'linear-gradient(135deg, #E05B5B 0%, #FF8A80 100%)',
+                background: 'linear-gradient(135deg, #02647E 0%, #72BDD1 100%)',
                 borderRadius: 2,
                 color: 'white',
               }}
