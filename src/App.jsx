@@ -10,6 +10,7 @@ import ReportsPage from './components/ReportsPage'
 import { AlertesPage } from './components/AlertesPage'
 import ExplorationPage from './components/ExplorationPage'
 import TopBar from './components/TopBar'
+import { NotificationBanner } from './components/NotificationBanner'
 import { NavProvider } from './context/NavContext'
 import { NotificationProvider } from './context/NotificationContext'
 import theme from './theme'
@@ -22,6 +23,7 @@ function App() {
                 <NotificationProvider>
                     <NavProvider>
                         <TopBar />
+                        <NotificationBanner />
                         <Routes>
                         <Route path="/" element={<Navigate to="/visualization" replace />} />
                         <Route path="/auth/signup" element={<SignUpComponent />} />
