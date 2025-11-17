@@ -532,7 +532,10 @@ function mountApiRoutes(app, esClient, logService) {
         startIp,
         endIp,
         field = 'source.ip',
-        size = 10
+        from = 0,
+        size = 50,
+        sortField = '@timestamp',
+        sortOrder = 'desc'
       } = req.body;
 
       if (!startIp || !endIp) {
@@ -548,54 +551,116 @@ function mountApiRoutes(app, esClient, logService) {
       const startNum = ipToNumber(startIp);
       const endNum = ipToNumber(endIp);
 
+      // Build IP range filter for Elasticsearch
+      const filterClauses = [];
+
+      // Time range filter (required)
+      if (timeRange?.from && timeRange?.to) {
+        filterClauses.push({
+          range: { '@timestamp': { gte: timeRange.from, lte: timeRange.to } }
+        });
+      }
+
+      // IP range filter - use range query instead of post-processing
+      filterClauses.push({
+        range: { [field]: { gte: startIp, lte: endIp } }
+      });
+
+      // Search documents in IP range
       const result = await esClient.search({
         index: process.env.ES_INDEX || 'filebeat-*',
+        from,
+        size,
         body: {
-          size: 0,
           query: {
             bool: {
-              filter: [
-                timeRange?.from && timeRange?.to ? { range: { '@timestamp': { gte: timeRange.from, lte: timeRange.to } } } : { match_all: {} }
-              ]
+              filter: filterClauses.length > 0 ? filterClauses : [{ match_all: {} }]
+            }
+          },
+          sort: [{ [sortField]: { order: sortOrder } }]
+        }
+      });
+
+      // Log sample document
+      if (result.hits.hits.length > 0) {
+        console.log('📊 IP Range Sample document:', JSON.stringify({
+          source_ip: result.hits.hits[0]._source.source?.ip,
+          source_port: result.hits.hits[0]._source.source?.port,
+          dest_ip: result.hits.hits[0]._source.destination?.ip,
+          dest_port: result.hits.hits[0]._source.destination?.port,
+          network_bytes: result.hits.hits[0]._source.network?.bytes,
+          network_protocol: result.hits.hits[0]._source.network?.protocol
+        }, null, 2));
+      }
+
+      res.json({
+        total: result.hits.total.value,
+        hits: result.hits.hits,
+        took: result.took
+      });
+    } catch (err) {
+      console.error('Erreur IP range search:', err.message);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Get aggregated stats for IP range search
+  app.post('/api/exploration/ip-range-stats', async (req, res) => {
+    try {
+      const {
+        timeRange,
+        startIp,
+        endIp,
+        field = 'source.ip'
+      } = req.body;
+
+      if (!startIp || !endIp) {
+        return res.status(400).json({ error: 'startIp and endIp are required' });
+      }
+
+      const filterClauses = [];
+
+      // Time range filter (required)
+      if (timeRange?.from && timeRange?.to) {
+        filterClauses.push({
+          range: { '@timestamp': { gte: timeRange.from, lte: timeRange.to } }
+        });
+      }
+
+      // IP range filter
+      filterClauses.push({
+        range: { [field]: { gte: startIp, lte: endIp } }
+      });
+
+      const result = await esClient.search({
+        index: process.env.ES_INDEX || 'filebeat-*',
+        size: 0,  // No documents needed, just aggregations
+        body: {
+          query: {
+            bool: {
+              filter: filterClauses.length > 0 ? filterClauses : [{ match_all: {} }]
             }
           },
           aggs: {
-            ip_distribution: {
-              terms: { field, size },
-              aggs: {
-                total_bytes: { sum: { field: 'network.bytes' } },
-                services: { terms: { field: 'network.application', size: 5 } }
-              }
-            }
+            total_bytes: { sum: { field: 'network.bytes' } },
+            total_packets: { value_count: { field: '@timestamp' } },
+            unique_applications: { cardinality: { field: 'fortinet.firewall.dstinetsvc', precision_threshold: 1000 } }
           }
         }
       });
 
-      // Filter results by IP range
-      const filtered = result.aggregations.ip_distribution.buckets.filter(bucket => {
-        try {
-          const ipNum = ipToNumber(bucket.key);
-          return ipNum >= startNum && ipNum <= endNum;
-        } catch {
-          return false;
-        }
-      });
-
-      // Convertir les agrégations en format hits pour compatibilité frontend
-      const hits = filtered.map(bucket => ({
-        _source: {
-          'source.ip': bucket.key,
-          'network.bytes': bucket.total_bytes?.value || 0,
-          'network.application': bucket.services?.buckets?.[0]?.key || 'Unknown'
-        }
-      }));
+      const totalBytes = result.aggregations.total_bytes.value || 0;
+      const totalPackets = result.aggregations.total_packets.value || 0;
+      const uniqueApplications = result.aggregations.unique_applications.value || 0;
 
       res.json({
-        hits: hits,
-        total: hits.length
+        totalBytes,
+        avgBytes: totalPackets > 0 ? Math.round(totalBytes / totalPackets) : 0,
+        uniqueServices: uniqueApplications,
+        packetCount: totalPackets
       });
     } catch (err) {
-      console.error('Erreur IP range search:', err.message);
+      console.error('Erreur IP range stats:', err.message);
       res.status(500).json({ error: err.message });
     }
   });
