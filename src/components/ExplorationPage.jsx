@@ -305,7 +305,7 @@ export default function ExplorationPage() {
         {/* Grille des filtres */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           {/* IP Source */}
-          <Grid xs={12} sm={6} md={4}>
+          <Grid sx={{ xs: 12, sm: 6, md: 4}}>
             <TextField
               fullWidth
               size="small"
@@ -318,7 +318,7 @@ export default function ExplorationPage() {
           </Grid>
 
           {/* Port Source */}
-          <Grid xs={12} sm={6} md={4}>
+          <Grid sx={{ xs: 12, sm: 6, md: 4}}>
             <TextField
               fullWidth
               size="small"
@@ -332,7 +332,7 @@ export default function ExplorationPage() {
           </Grid>
 
           {/* Protocole */}
-          <Grid xs={12} sm={6} md={4}>
+          <Grid sx={{ xs: 12, sm: 6, md: 4}}>
             <FormControl fullWidth size="small" variant="outlined">
               <InputLabel id="protocol-label">Protocole</InputLabel>
               <Select
@@ -362,7 +362,7 @@ export default function ExplorationPage() {
           </Grid>
 
           {/* Plage de dates */}
-          <Grid xs={12} sm={6} md={3}>
+          <Grid sx={{ xs: 12, sm: 6, md: 3}}>
             <TextField
               fullWidth
               size="small"
@@ -375,7 +375,7 @@ export default function ExplorationPage() {
             />
           </Grid>
 
-          <Grid xs={12} sm={6} md={2}>
+          <Grid sx={{ xs: 12, sm: 6, md: 2}}>
             <TextField
               fullWidth
               size="small"
@@ -388,7 +388,7 @@ export default function ExplorationPage() {
             />
           </Grid>
 
-          <Grid xs={12} sm={6} md={3}>
+          <Grid sx={{ xs: 12, sm: 6, md: 3}}>
             <TextField
               fullWidth
               size="small"
@@ -401,7 +401,7 @@ export default function ExplorationPage() {
             />
           </Grid>
 
-          <Grid xs={12} sm={6} md={2}>
+          <Grid sx={{ xs: 12, sm: 6, md: 2}}>
             <TextField
               fullWidth
               size="small"
@@ -467,7 +467,7 @@ export default function ExplorationPage() {
         </Typography>
 
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid xs={12} sm={6}>
+          <Grid sx={{ xs: 12, sm: 6}}>
             <TextField
               fullWidth
               size="small"
@@ -480,7 +480,7 @@ export default function ExplorationPage() {
             />
           </Grid>
 
-          <Grid xs={12} sm={6}>
+          <Grid sx={{ xs: 12, sm: 6}}>
             <TextField
               fullWidth
               size="small"
@@ -493,7 +493,7 @@ export default function ExplorationPage() {
             />
           </Grid>
 
-          <Grid xs={12} sm={6}>
+          <Grid sx={{ xs: 12, sm: 6}}>
             <TextField
               fullWidth
               size="small"
@@ -506,7 +506,7 @@ export default function ExplorationPage() {
             />
           </Grid>
 
-          <Grid xs={12} sm={6}>
+          <Grid sx={{ xs: 12, sm: 6}}>
             <TextField
               fullWidth
               size="small"
@@ -562,7 +562,7 @@ export default function ExplorationPage() {
       {/* Statistiques */}
       {results.length > 0 && (
         <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid xs={12} sm={6} md={3}>
+          <Grid sx={{ xs: 12, sm: 6, md: 3}}>
             <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
               <Typography color="textSecondary" gutterBottom>
                 Total de paquets
@@ -573,7 +573,7 @@ export default function ExplorationPage() {
             </Paper>
           </Grid>
 
-          <Grid xs={12} sm={6} md={3}>
+          <Grid sx={{ xs: 12, sm: 6, md: 3}}>
             <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
               <Typography color="textSecondary" gutterBottom>
                 Total de données
@@ -584,7 +584,7 @@ export default function ExplorationPage() {
             </Paper>
           </Grid>
 
-          <Grid xs={12} sm={6} md={3}>
+          <Grid sx={{ xs: 12, sm: 6, md: 3}}>
             <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
               <Typography color="textSecondary" gutterBottom>
                 Moy. par paquet
@@ -595,7 +595,7 @@ export default function ExplorationPage() {
             </Paper>
           </Grid>
 
-          <Grid xs={12} sm={6} md={3}>
+          <Grid sx={{ xs: 12, sm: 6, md: 3}}>
             <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
               <Typography color="textSecondary" gutterBottom>
                 Services uniques
@@ -612,7 +612,7 @@ export default function ExplorationPage() {
       {!loading && results.length > 0 && chartData.protocolData.length > 0 && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {/* Pie Chart - Protocoles */}
-          <Grid xs={12} md={6}>
+          <Grid sx={{ xs: 12, md: 6}}>
             <Paper elevation={2} sx={{ borderRadius: 2, p: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                 📊 Distribution des Protocoles
@@ -637,7 +637,7 @@ export default function ExplorationPage() {
 
           {/* Bar Chart - Services */}
           {chartData.serviceData.length > 0 && (
-            <Grid xs={12} md={6}>
+            <Grid sx={{ xs: 12, md: 6}}>
               <Paper elevation={2} sx={{ borderRadius: 2, p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                   📈 Top Services (Mo)
@@ -650,7 +650,7 @@ export default function ExplorationPage() {
                     width={350}
                     height={300}
                     margin={{ top: 20, bottom: 40, left: 50, right: 20 }}
-                    sx={{ '& text': { fontSize: '0.75rem' } }}
+                    sx={{ '& text': { fontSize: '0.75rem'}}}
                   />
                 </Box>
               </Paper>
@@ -675,7 +675,7 @@ export default function ExplorationPage() {
           
           <Grid container spacing={2}>
             {results.slice(pagination.from, pagination.from + pagination.size).map((row, index) => (
-              <Grid xs={12} sm={6} md={4} lg={3} key={index}>
+              <Grid key={index} sx={{ xs: 12, sm: 6, md: 4, lg: 3}}>
                 <Paper
                   elevation={1}
                   sx={{
