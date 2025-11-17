@@ -14,8 +14,7 @@ const listMenuItems = [
     },
     {
         title: 'Monitoring IP Source et Destination',
-        descript:
-            'Analysez les communications réseau en identifiant les adresses IP à l'origine et à la cible du trafic.',
+        descript: 'Analysez les communications réseau en identifiant les adresses IP à l\'origine et à la cible du trafic.',
         page: 'ip-view',
         icon: makeIcon(Lan),
     },
