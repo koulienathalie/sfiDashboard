@@ -127,6 +127,40 @@ function mountApiRoutes(app, esClient, logService) {
     }
   });
 
+  app.post('/api/ip-stats', async (req, res) => {
+    try {
+      const { timeRange, ip, field = 'source.ip' } = req.body;
+      if (!ip) return res.status(400).json({ error: 'ip required' });
+
+      const result = await esClient.search({
+        index: process.env.ES_INDEX || 'filebeat-*',
+        body: {
+          size: 0,
+          query: {
+            bool: {
+              must: [ { term: { [field]: ip } } ],
+              filter: { range: { '@timestamp': { gte: timeRange.from, lte: timeRange.to } } }
+            }
+          },
+          aggs: {
+            doc_count_agg: { value_count: { field: '_id' } },
+            total_bytes: { sum: { field: 'network.bytes' } },
+            avg_bytes: { avg: { field: 'network.bytes' } }
+          }
+        }
+      });
+
+      res.json({
+        count: result.aggregations.doc_count_agg.value || 0,
+        total_bytes: result.aggregations.total_bytes.value || 0,
+        avg_bytes: result.aggregations.avg_bytes.value || 0
+      });
+    } catch (err) {
+      console.error('Erreur ip-stats:', err.message);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.post('/api/top-bandwidth', async (req, res) => {
     try {
       const { timeRange, size = 10, type = 'source' } = req.body;
