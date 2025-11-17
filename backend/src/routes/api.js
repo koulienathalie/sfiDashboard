@@ -523,9 +523,18 @@ function mountApiRoutes(app, esClient, logService) {
         }
       });
 
+      // Convertir les agrégations en format hits pour compatibilité frontend
+      const hits = filtered.map(bucket => ({
+        _source: {
+          'source.ip': bucket.key,
+          'network.bytes': bucket.total_bytes?.value || 0,
+          'network.application': bucket.services?.buckets?.[0]?.key || 'Unknown'
+        }
+      }));
+
       res.json({
-        results: filtered,
-        total: filtered.length
+        hits: hits,
+        total: hits.length
       });
     } catch (err) {
       console.error('Erreur IP range search:', err.message);

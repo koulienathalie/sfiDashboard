@@ -15,7 +15,35 @@ const { Session } = require('./models/Session');
 const { Setting } = require('./models/Setting');
 
 const app = express();
-app.use(cors());
+
+// Parse FRONTEND_URL(s) - Support multiple URLs separated by spaces
+const parseAllowedOrigins = () => {
+  if (!process.env.FRONTEND_URL) {
+    return ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'];
+  }
+  const urls = process.env.FRONTEND_URL.split(/\s+/).filter(url => url.trim());
+  // Always include localhost fallbacks
+  const defaultUrls = ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'];
+  return [...new Set([...urls, ...defaultUrls])]; // Remove duplicates
+};
+
+// Configuration CORS détaillée
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = parseAllowedOrigins();
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const esClient = createEsClientFromEnv();
@@ -29,17 +57,6 @@ mountAuthRoutes(app);
 const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
 const server = http.createServer(app);
-
-// Parse FRONTEND_URL(s) - Support multiple URLs separated by spaces
-const parseAllowedOrigins = () => {
-  if (!process.env.FRONTEND_URL) {
-    return ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'];
-  }
-  const urls = process.env.FRONTEND_URL.split(/\s+/).filter(url => url.trim());
-  // Always include localhost fallbacks
-  const defaultUrls = ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'];
-  return [...new Set([...urls, ...defaultUrls])]; // Remove duplicates
-};
 
 const allowedOrigins = parseAllowedOrigins();
 console.log('✅ Allowed Origins for CORS:', allowedOrigins.join(', '));

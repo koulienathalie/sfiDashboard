@@ -39,7 +39,9 @@ export default function ExplorationPage() {
     sourcePort: '',
     protocol: '',
     startDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0]
+    startTime: '00:00',
+    endDate: new Date().toISOString().split('T')[0],
+    endTime: '23:59'
   })
 
   const [searchMode, setSearchMode] = useState('advanced') // 'simple', 'advanced', ou 'iprange'
@@ -64,8 +66,8 @@ export default function ExplorationPage() {
     setResults([])
 
     try {
-      const startDate = new Date(`${filters.startDate}T00:00:00Z`).getTime()
-      const endDate = new Date(`${filters.endDate}T23:59:59Z`).getTime()
+      const startDate = new Date(`${filters.startDate}T${filters.startTime}:00Z`).getTime()
+      const endDate = new Date(`${filters.endDate}T${filters.endTime}:59Z`).getTime()
 
       let endpoint = `${BACKEND_URL}/api/exploration/search`
       let body = {}
@@ -112,19 +114,32 @@ export default function ExplorationPage() {
 
       const data = await response.json()
       setTotalResults(data.total)
-      setResults(data.hits.map(hit => hit._source))
+      
+      // Supporter les deux formats de réponse
+      let hitsArray = Array.isArray(data.hits) ? data.hits : [];
+      let results_data = [];
+      
+      if (hitsArray.length > 0 && hitsArray[0]._source) {
+        // Format Elasticsearch avec _source
+        results_data = hitsArray.map(hit => hit._source);
+      } else if (hitsArray.length > 0 && hitsArray[0].source) {
+        // Format direct sans _source (comme ip-range)
+        results_data = hitsArray;
+      }
+      
+      setResults(results_data)
 
       // Calculer les stats
-      if (data.hits.length > 0) {
-        const totalBytes = data.hits.reduce((sum, hit) => sum + (hit._source['network.bytes'] || 0), 0)
-        const avgBytes = totalBytes / data.hits.length
-        const services = new Set(data.hits.map(hit => hit._source['network.application'] || 'Unknown'))
+      if (results_data.length > 0) {
+        const totalBytes = results_data.reduce((sum, hit) => sum + (hit['network.bytes'] || 0), 0)
+        const avgBytes = totalBytes / results_data.length
+        const services = new Set(results_data.map(hit => hit['network.application'] || 'Unknown'))
 
         setStats({
           totalBytes,
           avgBytes: Math.round(avgBytes),
           uniqueServices: services.size,
-          packetCount: data.hits.length
+          packetCount: results_data.length
         })
       }
     } catch (err) {
@@ -149,7 +164,9 @@ export default function ExplorationPage() {
       destinationPort: '14',
       protocol: '',
       startDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      endDate: new Date().toISOString().split('T')[0]
+      startTime: '00:00',
+      endDate: new Date().toISOString().split('T')[0],
+      endTime: '23:59'
     })
     setIpRangeStart('')
     setIpRangeEnd('')
@@ -345,7 +362,7 @@ export default function ExplorationPage() {
           </Grid>
 
           {/* Plage de dates */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={3}>
             <TextField
               fullWidth
               size="small"
@@ -358,7 +375,20 @@ export default function ExplorationPage() {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={2}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Heure de début"
+              type="time"
+              value={filters.startTime}
+              onChange={(e) => handleFilterChange('startTime', e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              variant="outlined"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
             <TextField
               fullWidth
               size="small"
@@ -366,6 +396,19 @@ export default function ExplorationPage() {
               type="date"
               value={filters.endDate}
               onChange={(e) => handleFilterChange('endDate', e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              variant="outlined"
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={2}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Heure de fin"
+              type="time"
+              value={filters.endTime}
+              onChange={(e) => handleFilterChange('endTime', e.target.value)}
               InputLabelProps={{ shrink: true }}
               variant="outlined"
             />
