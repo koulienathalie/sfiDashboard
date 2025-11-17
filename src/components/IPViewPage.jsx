@@ -1,9 +1,9 @@
-import { Grid, Typography, Stack, CircularProgress, IconButton, Box, Paper, Card, CardHeader, CardContent, Chip, Avatar, alpha } from '@mui/material'
+import { Grid, Typography, Stack, CircularProgress, IconButton, Box, Paper, Card, CardHeader, CardContent, Chip, Avatar, alpha, Button, Dialog, DialogTitle, DialogContent, Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { Refresh, TrendingUp, Router, Public, LanOutlined } from '@mui/icons-material'
+import { Refresh, TrendingUp, Router, Public, LanOutlined, Close, Info } from '@mui/icons-material'
 import { useEffect, useState } from 'react'
 import { onThrottled } from '../socketClient'
-import { LineChart } from '@mui/x-charts'
+import { LineChart, BarChart } from '@mui/x-charts'
 
 export default function IPViewPage() {
     const [destRows, setDestRows] = useState([])
@@ -11,6 +11,10 @@ export default function IPViewPage() {
     const [loading, setLoading] = useState(false)
     const [loadingBandwidth, setLoadingBandwidth] = useState(false)
     const [bandwidthData, setBandwidthData] = useState([])
+    const [selectedIP, setSelectedIP] = useState(null)
+    const [selectedIPType, setSelectedIPType] = useState(null) // 'source' or 'dest'
+    const [selectedIPBandwidth, setSelectedIPBandwidth] = useState([])
+    const [showIPDetails, setShowIPDetails] = useState(false)
 
     const destinationColumn = [
         { 
@@ -140,6 +144,46 @@ export default function IPViewPage() {
         }
     }
 
+    async function loadIPBandwidthData(ip, ipType) {
+        try {
+            const to = new Date()
+            const from = new Date(to.getTime() - 1000 * 60 * 60 * 4) // last 4h for detail
+
+            const field = ipType === 'source' ? 'source.ip' : 'destination.ip'
+            const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/api/bandwidth-by-ip', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    timeRange: { from: from.toISOString(), to: to.toISOString() },
+                    interval: '5m',
+                    ip: ip,
+                    field: field
+                }),
+            })
+            const data = await res.json()
+            if (res.ok && data.timeline) {
+                const formattedData = data.timeline.map(bucket => ({
+                    timestamp: bucket.key_as_string || bucket.key,
+                    bytes: bucket.total_bytes?.value || 0,
+                    sentBytes: bucket.sent_bytes?.value || 0,
+                    receivedBytes: bucket.received_bytes?.value || 0,
+                }))
+                setSelectedIPBandwidth(formattedData)
+            }
+        } catch (err) {
+            console.error('Error loading IP bandwidth data:', err)
+        }
+    }
+
+    const handleRowClick = (params) => {
+        const ip = params.row.source_netflow || params.row.dest_netflow
+        const type = params.row.source_netflow ? 'source' : 'dest'
+        setSelectedIP(ip)
+        setSelectedIPType(type)
+        loadIPBandwidthData(ip, type)
+        setShowIPDetails(true)
+    }
+
     useEffect(() => {
         loadTop()
         loadBandwidthData()
@@ -149,12 +193,16 @@ export default function IPViewPage() {
                 if (data.event === 'elastic_update') {
                     loadTop()
                     loadBandwidthData()
+                    // Also refresh selected IP data
+                    if (selectedIP && selectedIPType) {
+                        loadIPBandwidthData(selectedIP, selectedIPType)
+                    }
                 }
             }
         }, 5000)
 
         return () => unsubscribe?.()
-    }, [])
+    }, [selectedIP, selectedIPType])
 
     return (
         <Box sx={{
@@ -162,7 +210,7 @@ export default function IPViewPage() {
             minHeight: '100vh',
             background: 'linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%)',
             p: { xs: 2, sm: 3, md: 4 },
-            pt: { xs: 10, sm: 9, md: 8 },
+            pt: { xs: 12, sm: 11, md: 10 }, 
         }}>
             <Box sx={{ maxWidth: '1400px', mx: 'auto' }}>
                 {/* Header */}
@@ -228,10 +276,13 @@ export default function IPViewPage() {
                                         pageSizeOptions={[5, 10, 12]}
                                         initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}
                                         disableSelectionOnClick
+                                        onRowClick={handleRowClick}
                                         density="compact"
                                         sx={{
                                             width: '100%',
                                             border: 'none',
+                                            cursor: 'pointer',
+                                            '& .MuiDataGrid-row:hover': { backgroundColor: 'rgba(2, 100, 126, 0.05)' },
                                             '& .MuiDataGrid-root': { border: 'none' },
                                             '& .MuiDataGrid-cell': { borderBottom: '1px solid rgba(224, 224, 224, 0.5)', fontSize: 13 },
                                             '& .MuiDataGrid-columnHeaders': { backgroundColor: '#fafafa', fontWeight: 600, fontSize: 12, borderBottom: '2px solid rgba(0,0,0,0.08)' },
@@ -280,10 +331,13 @@ export default function IPViewPage() {
                                         pageSizeOptions={[5, 10, 12]}
                                         initialState={{ pagination: { paginationModel: { pageSize: 12 } } }}
                                         disableSelectionOnClick
+                                        onRowClick={handleRowClick}
                                         density="compact"
                                         sx={{
                                             width: '100%',
                                             border: 'none',
+                                            cursor: 'pointer',
+                                            '& .MuiDataGrid-row:hover': { backgroundColor: 'rgba(2, 100, 126, 0.05)' },
                                             '& .MuiDataGrid-root': { border: 'none' },
                                             '& .MuiDataGrid-cell': { borderBottom: '1px solid rgba(224, 224, 224, 0.5)', fontSize: 13 },
                                             '& .MuiDataGrid-columnHeaders': { backgroundColor: '#fafafa', fontWeight: 600, fontSize: 12, borderBottom: '2px solid rgba(0,0,0,0.08)' },
@@ -354,6 +408,92 @@ export default function IPViewPage() {
                     </CardContent>
                 </Card>
             </Box>
+
+            {/* IP Detail Dialog */}
+            <Dialog 
+                open={showIPDetails} 
+                onClose={() => setShowIPDetails(false)}
+                maxWidth="md"
+                fullWidth
+            >
+                <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        Détails - {selectedIPType === 'source' ? 'IP Source' : 'IP Destination'}: {selectedIP}
+                    </Typography>
+                    <IconButton onClick={() => setShowIPDetails(false)} size="small">
+                        <Close />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ pt: 2 }}>
+                        {selectedIPBandwidth.length === 0 ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                                <CircularProgress />
+                            </Box>
+                        ) : (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                {/* Stats Row */}
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                        <Paper sx={{ p: 2, backgroundColor: 'rgba(2, 100, 126, 0.05)' }}>
+                                            <Typography variant="body2" color="textSecondary" sx={{ mb: 0.5 }}>
+                                                Total Envoyé
+                                            </Typography>
+                                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                                {(selectedIPBandwidth.reduce((sum, d) => sum + (d.sentBytes || 0), 0) / (1024 * 1024 * 1024)).toFixed(2)} GB
+                                            </Typography>
+                                        </Paper>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <Paper sx={{ p: 2, backgroundColor: 'rgba(2, 100, 126, 0.05)' }}>
+                                            <Typography variant="body2" color="textSecondary" sx={{ mb: 0.5 }}>
+                                                Total Reçu
+                                            </Typography>
+                                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                                {(selectedIPBandwidth.reduce((sum, d) => sum + (d.receivedBytes || 0), 0) / (1024 * 1024 * 1024)).toFixed(2)} GB
+                                            </Typography>
+                                        </Paper>
+                                    </Grid>
+                                </Grid>
+
+                                {/* Bandwidth Chart */}
+                                <Card sx={{ p: 2 }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
+                                        Bande Passante (Dernières 4h)
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', minHeight: 300 }}>
+                                        <BarChart
+                                            dataset={selectedIPBandwidth}
+                                            xAxis={[{ 
+                                                scaleType: 'band', 
+                                                dataKey: 'timestamp',
+                                            }]}
+                                            series={[
+                                                { 
+                                                    dataKey: 'sentBytes', 
+                                                    label: 'Envoyé',
+                                                    color: '#52B57D'
+                                                },
+                                                { 
+                                                    dataKey: 'receivedBytes', 
+                                                    label: 'Reçu',
+                                                    color: '#02647E'
+                                                }
+                                            ]}
+                                            width={500}
+                                            height={300}
+                                            margin={{ top: 10, bottom: 40, left: 60, right: 10 }}
+                                            slotProps={{
+                                                legend: { hidden: false, position: 'top-right' }
+                                            }}
+                                        />
+                                    </Box>
+                                </Card>
+                            </Box>
+                        )}
+                    </Box>
+                </DialogContent>
+            </Dialog>
         </Box>
     )
 }
