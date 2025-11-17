@@ -162,17 +162,44 @@ export default function ExplorationPage() {
       if (hitsArray.length > 0 && hitsArray[0]._source) {
         // Format Elasticsearch avec _source
         console.log('✅ Using _source format');
-        results_data = hitsArray.map(hit => normalizeEsDocument(hit._source));
+        try {
+          results_data = hitsArray.map((hit, idx) => {
+            try {
+              return normalizeEsDocument(hit._source);
+            } catch (e) {
+              console.error(`Error normalizing hit ${idx}:`, e);
+              return {};
+            }
+          });
+        } catch (e) {
+          console.error('Error in map:', e);
+        }
       } else if (hitsArray.length > 0 && hitsArray[0].source) {
         // Format direct sans _source (comme ip-range)
         console.log('✅ Using direct source format');
-        results_data = hitsArray.map(hit => normalizeEsDocument(hit));
+        try {
+          results_data = hitsArray.map((hit, idx) => {
+            try {
+              return normalizeEsDocument(hit);
+            } catch (e) {
+              console.error(`Error normalizing hit ${idx}:`, e);
+              return {};
+            }
+          });
+        } catch (e) {
+          console.error('Error in map:', e);
+        }
       } else {
         console.warn('⚠️ No hits or unknown format:', hitsArray.length ? hitsArray[0] : 'empty');
       }
       
       console.log('📋 Normalized results:', results_data.length, results_data.slice(0, 2));
       setResults(results_data)
+      
+      // Afficher les résultats pour debug
+      if (results_data.length === 0) {
+        console.warn('⚠️ NO RESULTS TO DISPLAY!');
+      }
 
       // Récupérer les stats agrégées pour TOUS les résultats (pas seulement les 50 paginés)
       if (searchMode === 'advanced') {
