@@ -14,8 +14,6 @@ const { User } = require('./models/User');
 const { Session } = require('./models/Session');
 const { Setting } = require('./models/Setting');
 
-const app = express();
-
 // Parse FRONTEND_URL(s) - Support multiple URLs separated by spaces
 const parseAllowedOrigins = () => {
   if (!process.env.FRONTEND_URL) {
@@ -27,23 +25,33 @@ const parseAllowedOrigins = () => {
   return [...new Set([...urls, ...defaultUrls])]; // Remove duplicates
 };
 
+const allowedOrigins = parseAllowedOrigins();
+console.log('✅ Allowed Origins for CORS:', allowedOrigins.join(', '));
+
+const app = express();
+
 // Configuration CORS détaillée
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = parseAllowedOrigins();
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Permettre aussi les requêtes sans origin (comme Postman, tests, etc)
+    if (!origin) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn('❌ CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  maxAge: 86400
 };
 
-app.use(cors(corsOptions));
+app.use(cors(corsOptions));app.use(cors(corsOptions));
 app.use(express.json());
 
 const esClient = createEsClientFromEnv();
@@ -57,9 +65,6 @@ mountAuthRoutes(app);
 const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
 const server = http.createServer(app);
-
-const allowedOrigins = parseAllowedOrigins();
-console.log('✅ Allowed Origins for CORS:', allowedOrigins.join(', '));
 
 const io = new Server(server, { 
   cors: { 

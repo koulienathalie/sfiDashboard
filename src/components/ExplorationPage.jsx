@@ -4,7 +4,7 @@ import {
   TextField,
   Button,
   Box,
-  Grid,
+  Grid2,
   Table,
   TableBody,
   TableCell,
@@ -303,9 +303,9 @@ export default function ExplorationPage() {
         </Box>
 
         {/* Grille des filtres */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid2 container spacing={2} sx={{ mb: 3 }}>
           {/* IP Source */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid2 xs={12} sm={6} md={4}>
             <TextField
               fullWidth
               size="small"
@@ -315,10 +315,10 @@ export default function ExplorationPage() {
               onChange={(e) => handleFilterChange('sourceIp', e.target.value)}
               variant="outlined"
             />
-          </Grid>
+          </Grid2>
 
           {/* Port Source */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid2 xs={12} sm={6} md={4}>
             <TextField
               fullWidth
               size="small"
@@ -329,10 +329,10 @@ export default function ExplorationPage() {
               onChange={(e) => handleFilterChange('sourcePort', e.target.value)}
               variant="outlined"
             />
-          </Grid>
+          </Grid2>
 
           {/* Protocole */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid2 xs={12} sm={6} md={4}>
             <FormControl fullWidth size="small" variant="outlined">
               <InputLabel id="protocol-label">Protocole</InputLabel>
               <Select
@@ -359,10 +359,10 @@ export default function ExplorationPage() {
                 <MenuItem value="ipv6">IPv6</MenuItem>
               </Select>
             </FormControl>
-          </Grid>
+          </Grid2>
 
           {/* Plage de dates */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid2 xs={12} sm={6} md={3}>
             <TextField
               fullWidth
               size="small"
@@ -373,9 +373,9 @@ export default function ExplorationPage() {
               InputLabelProps={{ shrink: true }}
               variant="outlined"
             />
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid2 xs={12} sm={6} md={2}>
             <TextField
               fullWidth
               size="small"
@@ -386,9 +386,9 @@ export default function ExplorationPage() {
               InputLabelProps={{ shrink: true }}
               variant="outlined"
             />
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid2 xs={12} sm={6} md={3}>
             <TextField
               fullWidth
               size="small"
@@ -399,9 +399,9 @@ export default function ExplorationPage() {
               InputLabelProps={{ shrink: true }}
               variant="outlined"
             />
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid2 xs={12} sm={6} md={2}>
             <TextField
               fullWidth
               size="small"
@@ -412,8 +412,8 @@ export default function ExplorationPage() {
               InputLabelProps={{ shrink: true }}
               variant="outlined"
             />
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
 
         {/* Boutons d'action */}
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
@@ -466,8 +466,8 @@ export default function ExplorationPage() {
           Recherche par Plage d'IPs
         </Typography>
 
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6}>
+        <Grid2 container spacing={2} sx={{ mb: 3 }}>
+          <Grid2 xs={12} sm={6}>
             <TextField
               fullWidth
               size="small"
@@ -478,9 +478,9 @@ export default function ExplorationPage() {
               variant="outlined"
               helperText="Première IP source (machine client)"
             />
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} sm={6}>
+          <Grid2 xs={12} sm={6}>
             <TextField
               fullWidth
               size="small"
@@ -491,9 +491,9 @@ export default function ExplorationPage() {
               variant="outlined"
               helperText="Dernière IP source (machine client)"
             />
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} sm={6}>
+          <Grid2 xs={12} sm={6}>
             <TextField
               fullWidth
               size="small"
@@ -504,9 +504,9 @@ export default function ExplorationPage() {
               variant="outlined"
               InputLabelProps={{ shrink: true }}
             />
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} sm={6}>
+          <Grid2 xs={12} sm={6}>
             <TextField
               fullWidth
               size="small"
@@ -517,8 +517,8 @@ export default function ExplorationPage() {
               variant="outlined"
               InputLabelProps={{ shrink: true }}
             />
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
 
         {/* Boutons d'action */}
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -561,8 +561,8 @@ export default function ExplorationPage() {
 
       {/* Statistiques */}
       {results.length > 0 && (
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
+        <Grid2 container spacing={3} sx={{ mb: 3 }}>
+          <Grid2 xs={12} sm={6} md={3}>
             <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
               <Typography color="textSecondary" gutterBottom>
                 Total de paquets
@@ -571,9 +571,9 @@ export default function ExplorationPage() {
                   {stats.packetCount}
                 </Typography>
             </Paper>
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid2 xs={12} sm={6} md={3}>
             <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
               <Typography color="textSecondary" gutterBottom>
                 Total de données
@@ -582,9 +582,9 @@ export default function ExplorationPage() {
                 {formatBytes(stats.totalBytes)}
               </Typography>
             </Paper>
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid2 xs={12} sm={6} md={3}>
             <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
               <Typography color="textSecondary" gutterBottom>
                 Moy. par paquet
@@ -593,9 +593,9 @@ export default function ExplorationPage() {
                 {formatBytes(stats.avgBytes)}
               </Typography>
             </Paper>
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid2 xs={12} sm={6} md={3}>
             <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
               <Typography color="textSecondary" gutterBottom>
                 Services uniques
@@ -604,15 +604,15 @@ export default function ExplorationPage() {
                 {stats.uniqueServices}
               </Typography>
             </Paper>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       )}
 
       {/* Graphiques analytiques */}
       {!loading && results.length > 0 && chartData.protocolData.length > 0 && (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid2 container spacing={3} sx={{ mb: 4 }}>
           {/* Pie Chart - Protocoles */}
-          <Grid item xs={12} md={6}>
+          <Grid2 xs={12} md={6}>
             <Paper elevation={2} sx={{ borderRadius: 2, p: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                 📊 Distribution des Protocoles
@@ -633,11 +633,11 @@ export default function ExplorationPage() {
                 />
               </Box>
             </Paper>
-          </Grid>
+          </Grid2>
 
           {/* Bar Chart - Services */}
           {chartData.serviceData.length > 0 && (
-            <Grid item xs={12} md={6}>
+            <Grid2 xs={12} md={6}>
               <Paper elevation={2} sx={{ borderRadius: 2, p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                   📈 Top Services (Mo)
@@ -654,9 +654,9 @@ export default function ExplorationPage() {
                   />
                 </Box>
               </Paper>
-            </Grid>
+            </Grid2>
           )}
-        </Grid>
+        </Grid2>
       )}
 
       {/* Tableau des résultats */}
@@ -673,9 +673,9 @@ export default function ExplorationPage() {
             📊 Résultats en Vue Moderne ({totalResults} trouvés)
           </Typography>
           
-          <Grid container spacing={2}>
+          <Grid2 container spacing={2}>
             {results.slice(pagination.from, pagination.from + pagination.size).map((row, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+              <Grid2 xs={12} sm={6} md={4} lg={3} key={index}>
                 <Paper
                   elevation={1}
                   sx={{
@@ -763,9 +763,9 @@ export default function ExplorationPage() {
                     />
                   </Box>
                 </Paper>
-              </Grid>
+              </Grid2>
             ))}
-          </Grid>
+          </Grid2>
         </Paper>
 
         {/* Pagination */}
