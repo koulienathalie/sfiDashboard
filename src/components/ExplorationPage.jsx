@@ -65,18 +65,29 @@ export default function ExplorationPage() {
     return value;
   }
 
+  // Flatten un objet imbriqué
+  const flattenObject = (obj, prefix = '') => {
+    const flattened = {};
+    for (const [key, value] of Object.entries(obj || {})) {
+      const newKey = prefix ? `${prefix}.${key}` : key;
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        Object.assign(flattened, flattenObject(value, newKey));
+      } else {
+        flattened[newKey] = normalizeEsField(value);
+      }
+    }
+    return flattened;
+  }
+
   // Normaliser un document complet
   const normalizeEsDocument = (doc) => {
-    const normalized = {};
-    for (const [key, value] of Object.entries(doc)) {
-      normalized[key] = normalizeEsField(value);
-    }
+    const normalized = flattenObject(doc);
     
     // Mapper les champs d'application/service (Fortigate utilise fortinet.firewall.dstinetsvc ou rule.name)
     if (!normalized['network.application']) {
       normalized['network.application'] = 
-        normalizeEsField(doc?.fortinet?.firewall?.dstinetsvc) ||
-        normalizeEsField(doc?.rule?.name) ||
+        normalized['fortinet.firewall.dstinetsvc'] ||
+        normalized['rule.name'] ||
         'Unknown';
     }
     
@@ -157,9 +168,20 @@ export default function ExplorationPage() {
 
       // Calculer les stats
       if (results_data.length > 0) {
+        console.log('📊 Debug stats - First 3 results:');
+        results_data.slice(0, 3).forEach((hit, idx) => {
+          console.log(`  [${idx}]`, {
+            bytes: hit['network.bytes'],
+            app: hit['network.application'],
+            ip: hit['source.ip']
+          });
+        });
+        
         const totalBytes = results_data.reduce((sum, hit) => sum + (hit['network.bytes'] || 0), 0)
         const avgBytes = totalBytes / results_data.length
         const services = new Set(results_data.map(hit => hit['network.application'] || 'Unknown'))
+
+        console.log('📈 Stats calculated:', { totalBytes, avgBytes: Math.round(avgBytes), uniqueServices: services.size });
 
         setStats({
           totalBytes,
@@ -608,7 +630,7 @@ export default function ExplorationPage() {
         <>
         <Paper elevation={2} sx={{ borderRadius: 2, p: 3, mb: 3 }}>
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-            📊 Résultats en Vue Moderne ({totalResults} trouvés)
+            📊 Résultats ({totalResults} trouvés)
           </Typography>
           
           <Grid container spacing={2}>
