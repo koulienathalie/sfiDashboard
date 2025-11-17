@@ -166,29 +166,48 @@ export default function ExplorationPage() {
       
       setResults(results_data)
 
-      // Calculer les stats
-      if (results_data.length > 0) {
-        console.log('📊 Debug stats - First 3 results:');
-        results_data.slice(0, 3).forEach((hit, idx) => {
-          console.log(`  [${idx}]`, {
-            bytes: hit['network.bytes'],
-            app: hit['network.application'],
-            ip: hit['source.ip']
+      // Récupérer les stats agrégées pour TOUS les résultats (pas seulement les 50 paginés)
+      if (searchMode === 'advanced') {
+        try {
+          const statsResponse = await fetch(`${BACKEND_URL}/api/exploration/stats`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              timeRange: { from: startDate, to: endDate },
+              sourceIp: filters.sourceIp.trim() || undefined
+            })
           });
-        });
-        
-        const totalBytes = results_data.reduce((sum, hit) => sum + (hit['network.bytes'] || 0), 0)
-        const avgBytes = totalBytes / results_data.length
-        const services = new Set(results_data.map(hit => hit['network.application'] || 'Unknown'))
 
-        console.log('📈 Stats calculated:', { totalBytes, avgBytes: Math.round(avgBytes), uniqueServices: services.size });
-
+          if (statsResponse.ok) {
+            const statsData = await statsResponse.json();
+            console.log('📈 Aggregated stats for all results:', statsData);
+            setStats(statsData);
+          }
+        } catch (statsErr) {
+          console.warn('Could not fetch aggregated stats:', statsErr.message);
+          // Fallback to page-based stats
+          if (results_data.length > 0) {
+            const totalBytes = results_data.reduce((sum, hit) => sum + (hit['network.bytes'] || 0), 0);
+            const services = new Set(results_data.map(hit => hit['network.application'] || 'Unknown'));
+            setStats({
+              totalBytes,
+              avgBytes: Math.round(totalBytes / results_data.length),
+              uniqueServices: services.size,
+              packetCount: results_data.length
+            });
+          }
+        }
+      } else if (results_data.length > 0) {
+        // Pour les autres modes, calculer sur les résultats reçus
+        const totalBytes = results_data.reduce((sum, hit) => sum + (hit['network.bytes'] || 0), 0);
+        const services = new Set(results_data.map(hit => hit['network.application'] || 'Unknown'));
         setStats({
           totalBytes,
-          avgBytes: Math.round(avgBytes),
+          avgBytes: Math.round(totalBytes / results_data.length),
           uniqueServices: services.size,
           packetCount: results_data.length
-        })
+        });
       }
     } catch (err) {
       setError(err.message || 'Erreur lors de la recherche')

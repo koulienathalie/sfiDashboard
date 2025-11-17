@@ -463,6 +463,67 @@ function mountApiRoutes(app, esClient, logService) {
     }
   });
 
+  // Get aggregated stats for exploration search (for ALL results, not just paginated ones)
+  app.post('/api/exploration/stats', async (req, res) => {
+    try {
+      const {
+        timeRange,
+        sourceIp,
+        sourcePort
+      } = req.body;
+
+      const filterClauses = [];
+
+      // Time range filter (required)
+      if (timeRange?.from && timeRange?.to) {
+        filterClauses.push({
+          range: { '@timestamp': { gte: timeRange.from, lte: timeRange.to } }
+        });
+      }
+
+      // Source IP filter (primary filter)
+      if (sourceIp) {
+        filterClauses.push({ term: { 'source.ip': sourceIp } });
+      }
+
+      // Source port filter (optional)
+      if (sourcePort) {
+        filterClauses.push({ term: { 'source.port': parseInt(sourcePort) } });
+      }
+
+      const result = await esClient.search({
+        index: process.env.ES_INDEX || 'filebeat-*',
+        size: 0,  // No documents needed, just aggregations
+        body: {
+          query: {
+            bool: {
+              filter: filterClauses.length > 0 ? filterClauses : [{ match_all: {} }]
+            }
+          },
+          aggs: {
+            total_bytes: { sum: { field: 'network.bytes' } },
+            total_packets: { value_count: { field: '@timestamp' } },
+            unique_applications: { cardinality: { field: 'fortinet.firewall.dstinetsvc', precision_threshold: 1000 } }
+          }
+        }
+      });
+
+      const totalBytes = result.aggregations.total_bytes.value || 0;
+      const totalPackets = result.aggregations.total_packets.value || 0;
+      const uniqueApplications = result.aggregations.unique_applications.value || 0;
+
+      res.json({
+        totalBytes,
+        avgBytes: totalPackets > 0 ? Math.round(totalBytes / totalPackets) : 0,
+        uniqueServices: uniqueApplications,
+        packetCount: totalPackets
+      });
+    } catch (err) {
+      console.error('Erreur exploration stats:', err.message);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // IP range search
   app.post('/api/exploration/ip-range', async (req, res) => {
     try {
